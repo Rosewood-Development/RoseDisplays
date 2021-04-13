@@ -1,0 +1,65 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'java'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+group = 'dev.esophose'
+version = '1.0.0'
+
+compileJava {
+    options.compilerArgs += ['-parameters']
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+	jcenter()
+	
+    maven { url = 'https://repo.rosewooddev.io/repository/public/' }
+    maven { url = 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url = 'http://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url = 'http://repo.dmulloy2.net/nexus/repository/public/' }
+}
+
+dependencies {
+    shadow 'org.spigotmc:spigot:1.16.4'
+    shadow 'me.clip:placeholderapi:2.10.4'
+    shadow 'com.comphenix.protocol:ProtocolLib:4.5.0'
+
+    implementation 'dev.rosewood:rosegarden:1.0.5-SNAPSHOT'
+    implementation 'net.coobird:thumbnailator:0.4.1'
+    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+
+    relocate('dev.rosewood.rosegarden', 'dev.rosewood.rosedisplays.lib.rosegarden')
+    relocate('co.aikar.commands', 'dev.rosewood.rosedisplays.lib.acf.commands')
+    relocate('co.aikar.locales', 'dev.rosewood.rosedisplays.lib.acf.locales')
+    relocate('net.jodah.expiringmap', 'dev.rosewood.rosedisplays.lib.expiringmap')
+    relocate('org.intellij', 'dev.rosewood.rosedisplays.lib.intellij')
+    relocate('org.jetbrains', 'dev.rosewood.rosedisplays.lib.jetbrains')
+    relocate('net.coobird.thumbnailator', 'dev.rosewood.rosedisplays.lib.thumbnailator')
+    relocate('org.apache', 'dev.rosewood.rosedisplays.lib.apache')
+
+    exclude 'acf-*.properties'
+    exclude 'LICENSE'
+
+    minimize()
+}
+
+processResources {
+    from (sourceSets.main.resources.srcDirs) {
+        include '**/*.yml'
+        filter ReplaceTokens, tokens: ["version": project.property("version")]
+    }
+}
+
+build.dependsOn shadowJar
