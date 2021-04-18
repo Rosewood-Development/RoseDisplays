@@ -14,4 +14,8 @@ public abstract class FileDataSource implements DataSource {
         return this.file;
     }
 
+    @Override
+    public String getName() {
+        return this.file.getName();
+    }
 }

@@ -5,6 +5,7 @@ import dev.rosewood.rosedisplays.data.FileDataSource;
 import dev.rosewood.rosedisplays.data.GifDataSource;
 import dev.rosewood.rosedisplays.data.ImageDataSource;
 import dev.rosewood.rosedisplays.data.ScreenCaptureDataSource;
+import dev.rosewood.rosedisplays.display.ChatDisplay;
 import dev.rosewood.rosedisplays.display.DebugDisplay;
 import dev.rosewood.rosedisplays.display.Display;
 import dev.rosewood.rosedisplays.display.DisplayType;
@@ -52,6 +53,7 @@ public class DisplayManager extends Manager implements Listener {
         this.displayTypeMap.put(DisplayType.PARTICLE, ParticleDisplay.class);
         this.displayTypeMap.put(DisplayType.SCOREBOARD, ScoreboardDisplay.class);
         this.displayTypeMap.put(DisplayType.DEBUG, DebugDisplay.class);
+        this.displayTypeMap.put(DisplayType.CHAT, ChatDisplay.class);
 
         Bukkit.getPluginManager().registerEvents(this, this.rosePlugin);
     }
@@ -77,13 +79,13 @@ public class DisplayManager extends Manager implements Listener {
     // TODO: Track player distance from displays, use a runnable for this since the player move event is absurd
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, () ->
+        Bukkit.getScheduler().runTask(this.rosePlugin, () ->
                 this.activeDisplays.keySet().forEach(x -> x.addViewer(event.getPlayer())));
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, () ->
+        Bukkit.getScheduler().runTask(this.rosePlugin, () ->
                 this.activeDisplays.keySet().forEach(x -> x.removeViewer(event.getPlayer())));
     }
 
@@ -113,10 +115,10 @@ public class DisplayManager extends Manager implements Listener {
     }
 
     private void createDisplay(DisplayType displayType, DataSource dataSource, Location location) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.rosePlugin, () -> {
+        Bukkit.getScheduler().runTask(this.rosePlugin, () -> {
             try {
                 int maxSize = Setting.MAX_DISPLAY_SIZE.getInt();
-                dataSource.loadData(maxSize, maxSize);
+                dataSource.loadData(Math.min(displayType.getMaxWidth(), maxSize), Math.min(displayType.getMaxHeight(), maxSize));
 
                 Display display = this.displayTypeMap.get(displayType).getConstructor(DataSource.class, Location.class).newInstance(dataSource, location);
                 Thread displayThread = new Thread(display);

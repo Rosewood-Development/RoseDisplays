@@ -5,7 +5,6 @@ import dev.rosewood.rosedisplays.util.BlockHighlight;
 import dev.rosewood.rosedisplays.util.DebugPayloadUtil;
 import java.util.Set;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class DebugDisplay extends Display {
@@ -21,10 +20,6 @@ public class DebugDisplay extends Display {
 
     @Override
     protected void render(Set<Player> players, int[] frameData) {
-        World world = this.location.getWorld();
-        if (world == null)
-            throw new IllegalArgumentException("World cannot be null");
-
         int centerX = (int) (this.location.getX() - (this.width / 2D));
         int centerY = (int) (this.location.getY() + (this.height / 2D));
         int centerZ = (int) (this.location.getZ());

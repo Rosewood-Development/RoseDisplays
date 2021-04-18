@@ -35,4 +35,9 @@ public interface DataSource {
      */
     int getFrameDelay();
 
+    /**
+     * @return the name of the data source
+     */
+    String getName();
+
 }

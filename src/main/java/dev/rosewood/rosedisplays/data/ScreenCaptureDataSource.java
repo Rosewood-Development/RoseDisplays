@@ -66,4 +66,8 @@ public class ScreenCaptureDataSource implements DataSource {
         return REFRESH_RATE;
     }
 
+    @Override
+    public String getName() {
+        return "Screenshare";
+    }
 }

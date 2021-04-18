@@ -12,8 +12,8 @@ import net.minecraft.server.v1_16_R3.IChatBaseComponent;
 
 public final class ImageUtil {
 
-    private static final String BLOCK = "\u2588";
-    private static final String SPACE = "\u3000";
+    public static final String BLOCK = "\u2588";
+    public static final String SPACE = "\u3000";
 
     private ImageUtil() {
 
