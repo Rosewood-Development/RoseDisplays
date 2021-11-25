@@ -1,0 +1,31 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+compileJava {
+    options.compilerArgs += ['-parameters']
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    implementation project(':NMS:Wrapper')
+
+    compileOnly 'org.spigotmc:spigot-api:1.18-pre8-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.10.4'
+    compileOnly 'io.netty:netty-all:4.1.70.Final'
+
+    api 'dev.rosewood:rosegarden:1.0.7-SNAPSHOT'
+    api 'net.coobird:thumbnailator:0.4.1'
+}
+
+processResources {
+    from (sourceSets.main.resources.srcDirs) {
+        include '**/*.yml'
+        filter ReplaceTokens, tokens: ["version": project.property("version")]
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+}

@@ -1,12 +1,12 @@
 package dev.rosewood.rosedisplays.manager;
 
+import com.google.common.io.Files;
 import dev.rosewood.rosedisplays.data.DataSource;
 import dev.rosewood.rosedisplays.data.FileDataSource;
 import dev.rosewood.rosedisplays.data.GifDataSource;
 import dev.rosewood.rosedisplays.data.ImageDataSource;
 import dev.rosewood.rosedisplays.data.ScreenCaptureDataSource;
 import dev.rosewood.rosedisplays.display.ChatDisplay;
-import dev.rosewood.rosedisplays.display.DebugDisplay;
 import dev.rosewood.rosedisplays.display.Display;
 import dev.rosewood.rosedisplays.display.DisplayType;
 import dev.rosewood.rosedisplays.display.HologramDisplay;
@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.libs.org.apache.commons.io.FilenameUtils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -52,7 +51,7 @@ public class DisplayManager extends Manager implements Listener {
         this.displayTypeMap.put(DisplayType.HOLOGRAM, HologramDisplay.class);
         this.displayTypeMap.put(DisplayType.PARTICLE, ParticleDisplay.class);
         this.displayTypeMap.put(DisplayType.SCOREBOARD, ScoreboardDisplay.class);
-        this.displayTypeMap.put(DisplayType.DEBUG, DebugDisplay.class);
+        //this.displayTypeMap.put(DisplayType.DEBUG, DebugDisplay.class);
         this.displayTypeMap.put(DisplayType.CHAT, ChatDisplay.class);
 
         Bukkit.getPluginManager().registerEvents(this, this.rosePlugin);
@@ -109,7 +108,7 @@ public class DisplayManager extends Manager implements Listener {
     }
 
     private FileDataSource createFileDataSource(File file) throws ReflectiveOperationException {
-        String extension = FilenameUtils.getExtension(file.getAbsolutePath()).toLowerCase();
+        String extension = Files.getFileExtension(file.getAbsolutePath()).toLowerCase();
         Class<? extends FileDataSource> dataSourceClass = this.fileDataSourceMap.get(extension);
         return dataSourceClass.getConstructor(File.class).newInstance(file);
     }

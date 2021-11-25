@@ -1,15 +1,9 @@
 package dev.rosewood.rosedisplays.util;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.MinecraftKey;
 import dev.rosewood.rosegarden.hook.PlaceholderAPIHook;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import org.bukkit.Bukkit;
@@ -74,17 +68,17 @@ public final class DebugPayloadUtil {
     }
 
     private static void sendPayload(Player receiver, String channel, ByteBuf bytes) {
-        PacketContainer handle = new PacketContainer(PacketType.Play.Server.CUSTOM_PAYLOAD);
-        handle.getMinecraftKeys().write(0, new MinecraftKey(channel));
-
-        Object serializer = MinecraftReflection.getPacketDataSerializer(bytes);
-        handle.getModifier().withType(ByteBuf.class).write(0, serializer);
-
-        try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(receiver, handle);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Unable to send the packet", e);
-        }
+//        PacketContainer handle = new PacketContainer(PacketType.Play.Server.CUSTOM_PAYLOAD);
+//        handle.getMinecraftKeys().write(0, new MinecraftKey(channel));
+//
+//        Object serializer = MinecraftReflection.getPacketDataSerializer(bytes);
+//        handle.getModifier().withType(ByteBuf.class).write(0, serializer);
+//
+//        try {
+//            ProtocolLibrary.getProtocolManager().sendServerPacket(receiver, handle);
+//        } catch (InvocationTargetException e) {
+//            throw new RuntimeException("Unable to send the packet", e);
+//        }
     }
 
     private static long blockPosToLong(int x, int y, int z) {

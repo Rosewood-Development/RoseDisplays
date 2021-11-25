@@ -2,7 +2,6 @@ package dev.rosewood.rosedisplays.display;
 
 import dev.rosewood.rosedisplays.data.DataSource;
 import dev.rosewood.rosedisplays.util.BlockHighlight;
-import dev.rosewood.rosedisplays.util.DebugPayloadUtil;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -28,7 +27,7 @@ public class DebugDisplay extends Display {
             for (int x = 0; x < this.width; x++) {
                 int color = frameData[this.width * y + x];
                 BlockHighlight highlight = new BlockHighlight(centerX + x, centerY - y, centerZ, color, " ", this.dataSource.getFrameDelay() + 100);
-                DebugPayloadUtil.sendBlockHighlights(players, highlight);
+                //DebugPayloadUtil.sendBlockHighlights(players, highlight);
             }
         }
     }

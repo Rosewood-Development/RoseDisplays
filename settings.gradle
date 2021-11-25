@@ -1,1 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://repo.rosewooddev.io/repository/public/' }
+    }
+}
+
 rootProject.name = 'RoseDisplays'
+
+include('Plugin')
+include('NMS:Wrapper')
+include('NMS:v1_18_R1')

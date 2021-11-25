@@ -1,6 +1,5 @@
 package dev.rosewood.rosedisplays.util;
 
-import dev.rosewood.rosegarden.utils.NMSUtil;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,7 +9,7 @@ public final class EntityUtil {
 
     static {
         try {
-            Field entityCount = Class.forName("net.minecraft.server." + NMSUtil.getVersion() + ".Entity").getDeclaredField("entityCount");
+            Field entityCount = Class.forName("net.minecraft.world.entity.Entity").getDeclaredField("b");
             entityCount.setAccessible(true);
             ENTITY_ID = (AtomicInteger) entityCount.get(null);
         } catch (ReflectiveOperationException e) {
