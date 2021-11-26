@@ -6,16 +6,20 @@ import dev.rosewood.rosedisplays.manager.ConfigurationManager;
 import dev.rosewood.rosedisplays.manager.DataManager;
 import dev.rosewood.rosedisplays.manager.DisplayManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
+import dev.rosewood.rosedisplays.util.TextureToColorUtil;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -56,6 +60,12 @@ public class RoseDisplays extends RosePlugin {
     }
 
     @Override
+    public void reload() {
+        super.reload();
+        TextureToColorUtil.clearCache();
+    }
+
+    @Override
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
                 CommandManager.class,
@@ -72,6 +82,30 @@ public class RoseDisplays extends RosePlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase("rd") || !(sender instanceof Player))
             return true;
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("export")) {
+            try {
+                File exportFile = new File(this.getDataFolder(), "colors.txt");
+                if (exportFile.exists())
+                    exportFile.delete();
+
+                exportFile.createNewFile();
+
+                TextureToColorUtil.getClosestMaterial(0);
+                sender.sendMessage("Exporting " + TextureToColorUtil.COLOR_TO_TEXTURE_MAP.size() + " color mappings");
+
+                try (FileWriter writer = new FileWriter(exportFile)) {
+                    for (int color : TextureToColorUtil.COLOR_TO_TEXTURE_MAP.keySet()) {
+                        Material material = TextureToColorUtil.COLOR_TO_TEXTURE_MAP.get(color);
+                        writer.write(material.name().toLowerCase() + ": #" + String.format("%06X", color) + '\n');
+                    }
+                    writer.flush();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             this.reload();

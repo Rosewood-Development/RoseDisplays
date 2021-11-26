@@ -4,6 +4,7 @@ public enum DisplayType {
 
     HOLOGRAM(Integer.MAX_VALUE, Integer.MAX_VALUE),
     PARTICLE(Integer.MAX_VALUE, Integer.MAX_VALUE),
+    PARTICLE_MARKER(Integer.MAX_VALUE, Integer.MAX_VALUE),
     SCOREBOARD(64, 15),
     DEBUG(Integer.MAX_VALUE, Integer.MAX_VALUE),
     CHAT(35, 20);
