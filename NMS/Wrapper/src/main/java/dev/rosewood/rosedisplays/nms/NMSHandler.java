@@ -12,4 +12,6 @@ public interface NMSHandler {
 
     void sendHologramDespawnPacket(Collection<Player> players, int entityId);
 
+    int getNextAvailableEntityId();
+
 }

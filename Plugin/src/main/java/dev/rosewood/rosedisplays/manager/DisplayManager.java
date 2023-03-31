@@ -13,6 +13,7 @@ import dev.rosewood.rosedisplays.display.HologramDisplay;
 import dev.rosewood.rosedisplays.display.ParticleDisplay;
 import dev.rosewood.rosedisplays.display.ParticleMarkerDisplay;
 import dev.rosewood.rosedisplays.display.ScoreboardDisplay;
+import dev.rosewood.rosedisplays.display.SingularHologramDisplay;
 import dev.rosewood.rosedisplays.manager.ConfigurationManager.Setting;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
@@ -50,6 +51,7 @@ public class DisplayManager extends Manager implements Listener {
 
         // Populate display renderer map
         this.displayTypeMap.put(DisplayType.HOLOGRAM, HologramDisplay.class);
+        this.displayTypeMap.put(DisplayType.DISPLAY_ENTITY, SingularHologramDisplay.class);
         this.displayTypeMap.put(DisplayType.PARTICLE, ParticleDisplay.class);
         this.displayTypeMap.put(DisplayType.PARTICLE_MARKER, ParticleMarkerDisplay.class);
         this.displayTypeMap.put(DisplayType.SCOREBOARD, ScoreboardDisplay.class);

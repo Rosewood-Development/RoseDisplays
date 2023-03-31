@@ -1,23 +1,19 @@
 package dev.rosewood.rosedisplays;
 
 import dev.rosewood.rosedisplays.display.DisplayType;
-import dev.rosewood.rosedisplays.manager.CommandManager;
 import dev.rosewood.rosedisplays.manager.ConfigurationManager;
 import dev.rosewood.rosedisplays.manager.DataManager;
 import dev.rosewood.rosedisplays.manager.DisplayManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosedisplays.util.TextureToColorUtil;
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -42,7 +38,7 @@ public class RoseDisplays extends RosePlugin {
     }
 
     public RoseDisplays() {
-        super(-1, 11043, ConfigurationManager.class, DataManager.class, LocaleManager.class);
+        super(-1, 11043, ConfigurationManager.class, DataManager.class, LocaleManager.class, null);
 
         instance = this;
     }
@@ -67,20 +63,15 @@ public class RoseDisplays extends RosePlugin {
 
     @Override
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
-        return Arrays.asList(
-                CommandManager.class,
+        return List.of(
+                //CommandManager.class,
                 DisplayManager.class
         );
     }
 
     @Override
-    public List<Class<? extends DataMigration>> getDataMigrations() {
-        return Collections.emptyList(); // TODO
-    }
-
-    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("rd") || !(sender instanceof Player))
+        if (!command.getName().equalsIgnoreCase("rd") || !(sender instanceof Player player))
             return true;
 
         if (args.length == 1 && args[0].equalsIgnoreCase("export")) {
@@ -118,7 +109,6 @@ public class RoseDisplays extends RosePlugin {
             return true;
         }
 
-        Player player = (Player) sender;
         Location location = player.getLocation();
 
         if (Arrays.stream(DisplayType.values()).map(Enum::name).noneMatch(x -> x.equalsIgnoreCase(args[1]))) {
@@ -147,7 +137,7 @@ public class RoseDisplays extends RosePlugin {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!command.getName().equalsIgnoreCase("rd") || !(sender instanceof Player) || args.length > 2)
-            return Collections.emptyList();
+            return List.of();
 
         List<String> completions = new ArrayList<>();
 
@@ -155,9 +145,9 @@ public class RoseDisplays extends RosePlugin {
             completions.add("reload");
             File[] filesArray = this.fileDir.listFiles();
             if (filesArray != null)
-                completions.addAll(Arrays.stream(filesArray).filter(File::isFile).map(File::getName).collect(Collectors.toList()));
+                completions.addAll(Arrays.stream(filesArray).filter(File::isFile).map(File::getName).toList());
         } else if (!args[0].equalsIgnoreCase("reload")) {
-            completions.addAll(Arrays.stream(DisplayType.values()).map(Enum::name).map(String::toLowerCase).collect(Collectors.toList()));
+            completions.addAll(Arrays.stream(DisplayType.values()).map(Enum::name).map(String::toLowerCase).toList());
         }
 
         List<String> suggestions = new ArrayList<>();

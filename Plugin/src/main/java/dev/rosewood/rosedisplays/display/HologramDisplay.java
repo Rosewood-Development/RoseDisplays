@@ -4,7 +4,6 @@ import dev.rosewood.rosedisplays.data.DataSource;
 import dev.rosewood.rosedisplays.manager.ConfigurationManager.Setting;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
-import dev.rosewood.rosedisplays.util.EntityUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,7 +95,7 @@ public class HologramDisplay extends Display {
         private int[] lastFrameData;
 
         public HologramLine() {
-            this.entityId = EntityUtil.getNewEntityId();
+            this.entityId = NMSAdapter.getHandler().getNextAvailableEntityId();
             this.lastFrameData = null;
         }
 
@@ -106,52 +105,6 @@ public class HologramDisplay extends Display {
                 this.lastFrameData = lineData;
             return requiresUpdate;
         }
-
-//        /**
-//         * Sends a metadata update with the given text.
-//         *
-//         * @param component text component
-//         */
-//        public PacketContainer createUpdateTextMetadataPacket(Object component) {
-//            PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
-//            packetContainer.getIntegers().write(0, this.entityId);
-//
-//            List<WrappedWatchableObject> object = Collections.singletonList(
-//                    new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, chatSerializer), Optional.ofNullable(component)));
-//            packetContainer.getWatchableCollectionModifier().write(0, object);
-//            return packetContainer;
-//        }
-//
-//        public PacketContainer createSpawnPackets(Location location) {
-//            final PacketContainer spawnEntityLiving = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-//            spawnEntityLiving.getIntegers().write(0, this.entityId);
-//            spawnEntityLiving.getUUIDs().write(0, UUID.randomUUID());
-//            spawnEntityLiving.getIntegers().write(1, 1);
-//            spawnEntityLiving.getDoubles().write(0, location.getX());
-//            spawnEntityLiving.getDoubles().write(1, location.getY());
-//            spawnEntityLiving.getDoubles().write(2, location.getZ());
-//            return spawnEntityLiving;
-//        }
-//
-//        public PacketContainer createDespawnPacket() {
-//            PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
-//            packetContainer.getIntegerArrays().write(0, new int[]{this.entityId});
-//            return packetContainer;
-//        }
-//
-//        public PacketContainer createMetadataPacket(Object component) {
-//            PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
-//            packetContainer.getIntegers().write(0, this.entityId);
-//            packetContainer.getWatchableCollectionModifier().write(0, this.buildMetadata(component));
-//            return packetContainer;
-//        }
-//
-//        private List<WrappedWatchableObject> buildMetadata(Object component) {
-//            return Arrays.asList(new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (byte) 0x20),
-//                    new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), Optional.ofNullable(component)),
-//                    new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(3, WrappedDataWatcher.Registry.get(Boolean.class)), true),
-//                    new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(5, WrappedDataWatcher.Registry.get(Boolean.class)), true));
-//        }
 
         public int getEntityId() {
             return this.entityId;

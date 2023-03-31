@@ -1,14 +1,16 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
+    id 'com.github.johnrengelman.shadow' version '7.1.0' apply false
 }
 
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'com.github.johnrengelman.shadow'
-    group = 'dev.esophose'
+    group = 'dev.rosewood'
     version = '1.0.0-SNAPSHOT'
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+
+    java {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    }
 
     repositories {
         mavenCentral()
@@ -25,7 +27,7 @@ allprojects {
 dependencies {
     implementation project(':Plugin')
     implementation project(':NMS:Wrapper')
-    implementation project(path: ':NMS:v1_18_R1', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_19_R3', configuration: 'remapped')
 }
 
 shadowJar {

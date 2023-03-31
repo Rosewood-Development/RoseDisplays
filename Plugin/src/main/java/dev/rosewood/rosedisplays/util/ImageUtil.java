@@ -6,8 +6,8 @@ import net.coobird.thumbnailator.Thumbnails;
 
 public final class ImageUtil {
 
-    public static final String BLOCK = "\u2588";
-    public static final String SPACE = "\u3000";
+    public static final String BLOCK = "\u2588\uF801";
+    public static final String SPACE = "\u3000\uF801";
 
     private ImageUtil() {
 
