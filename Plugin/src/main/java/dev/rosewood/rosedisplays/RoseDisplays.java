@@ -2,7 +2,6 @@ package dev.rosewood.rosedisplays;
 
 import dev.rosewood.rosedisplays.manager.CommandManager;
 import dev.rosewood.rosedisplays.manager.ConfigurationManager;
-import dev.rosewood.rosedisplays.manager.DataManager;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosegarden.RosePlugin;
@@ -24,7 +23,7 @@ public class RoseDisplays extends RosePlugin {
     }
 
     public RoseDisplays() {
-        super(-1, 11043, ConfigurationManager.class, DataManager.class, LocaleManager.class, CommandManager.class);
+        super(-1, 11043, ConfigurationManager.class, null, LocaleManager.class, CommandManager.class);
 
         instance = this;
     }

@@ -1,12 +1,11 @@
 package dev.rosewood.rosedisplays.hologram;
 
-import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
 import dev.rosewood.rosedisplays.hologram.renderer.HologramRenderer;
 import java.util.List;
 
 public class Hologram {
 
-    public HologramProperties getProperties() {
+    public HologramPropertyStore getProperties() {
         return null;
     }
 

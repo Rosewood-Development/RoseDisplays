@@ -11,12 +11,8 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.10.4'
-    compileOnly 'io.netty:netty-all:4.1.70.Final'
-    compileOnly 'it.unimi.dsi:fastutil:8.1.0'
 
-    api 'net.jodah:expiringmap:0.5.10'
     api 'dev.rosewood:rosegarden:1.2.1'
-    api 'net.coobird:thumbnailator:0.4.1'
 }
 
 processResources {

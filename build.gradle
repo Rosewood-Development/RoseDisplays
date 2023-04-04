@@ -34,9 +34,9 @@ shadowJar {
     archiveClassifier.set(null)
 
     relocate('dev.rosewood.rosegarden', 'dev.rosewood.rosedisplays.lib.rosegarden')
-    relocate('net.jodah.expiringmap', 'dev.rosewood.rosedisplays.lib.expiringmap')
-    relocate('org.intellij', 'dev.rosewood.rosedisplays.lib.intellij')
-    relocate('org.jetbrains', 'dev.rosewood.rosedisplays.lib.jetbrains')
+
+    exclude 'dev/rosewood/rosegarden/lib/hikaricp/**/*.class'
+    exclude 'dev/rosewood/rosegarden/lib/slf4j/**/*.class'
 }
 
 build.dependsOn shadowJar
