@@ -1,10 +1,7 @@
 name: RoseDisplays
 main: dev.rosewood.rosedisplays.RoseDisplays
 version: '@version@'
-api-version: '1.18'
+api-version: '1.19'
 description: Create fancy colored displays
 author: Esophose
 softdepend: [PlaceholderAPI]
-commands:
-  rd:
-    description: The base RoseDisplays command

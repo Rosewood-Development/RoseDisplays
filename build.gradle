@@ -37,8 +37,6 @@ shadowJar {
     relocate('net.jodah.expiringmap', 'dev.rosewood.rosedisplays.lib.expiringmap')
     relocate('org.intellij', 'dev.rosewood.rosedisplays.lib.intellij')
     relocate('org.jetbrains', 'dev.rosewood.rosedisplays.lib.jetbrains')
-    relocate('net.coobird.thumbnailator', 'dev.rosewood.rosedisplays.lib.thumbnailator')
-    relocate('org.apache', 'dev.rosewood.rosedisplays.lib.apache')
 }
 
 build.dependsOn shadowJar

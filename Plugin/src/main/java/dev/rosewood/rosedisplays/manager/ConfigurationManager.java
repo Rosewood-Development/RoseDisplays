@@ -9,10 +9,8 @@ import dev.rosewood.rosegarden.manager.AbstractConfigurationManager;
 public class ConfigurationManager extends AbstractConfigurationManager {
 
     public enum Setting implements RoseSetting {
-        MAX_DISPLAY_SIZE("max-display-size", 128, "The max width or height a display is allowed to have", "Sizes exceeding this value will be automatically downscaled"),
-        TIME_BETWEEN_UPDATES("time-between-updates", 200, "The time in milliseconds between display updates", "This is used for particle displays for static images"),
-        SCREEN_CAPTURE_REFRESH_RATE("screen-capture-refresh-rate", 1000 / 20, "The refresh rate to be used for screen capturing"),
-        USE_INTERLACING("use-interlacing", true, "Should interlacing be used?", "If enabled, animated displays will run much faster, but at a loss of quality");
+
+        ;
 
         private final String key;
         private final Object defaultValue;

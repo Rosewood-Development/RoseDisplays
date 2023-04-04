@@ -2,18 +2,14 @@ package dev.rosewood.rosedisplays.nms.v1_19_R3;
 
 import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosedisplays.nms.util.ReflectionUtils;
+import dev.rosewood.rosedisplays.nms.v1_19_R3.mapping.HologramPropertyProviderImpl;
+import dev.rosewood.rosedisplays.property.HologramPropertyProvider;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
@@ -34,9 +30,6 @@ public class NMSHandlerImpl implements NMSHandler {
             SynchedEntityData.DataValue.create(EntityDataSerializers.INT.createAccessor(23), Integer.MAX_VALUE), // Line width
             SynchedEntityData.DataValue.create(EntityDataSerializers.INT.createAccessor(24), new Color(0, 0, 0, 0).getRGB()) // Background color
     );
-
-    private static final String BLOCK = "\u2588\uF801";
-    private static final String SPACE = "\u3000\uF801";
 
     private static AtomicInteger entityIdIncrementer;
     static {
@@ -68,10 +61,9 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramMetadataPacket(Collection<Player> players, int entityId, int[] frameData) {
+    public void sendHologramMetadataPacket(Collection<Player> players, int entityId, String text) {
         List<SynchedEntityData.DataValue<?>> dataValues = new ArrayList<>(DATA_VALUES);
-        Component nameComponent = this.getDataAsChatComponent(frameData);
-        dataValues.add(SynchedEntityData.DataValue.create(EntityDataSerializers.COMPONENT.createAccessor(22), nameComponent));
+        dataValues.add(HologramPropertyProviderImpl.getInstance().createDataValue("text", text));
 
         ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(entityId, dataValues);
 
@@ -92,47 +84,9 @@ public class NMSHandlerImpl implements NMSHandler {
         return entityIdIncrementer.incrementAndGet();
     }
 
-    private MutableComponent getDataAsChatComponent(int[] data) {
-        MutableComponent component = Component.empty();
-        MutableComponent lastComponent = null;
-        int lastColor = 0xFFFFFF;
-        for (int color : data) {
-            lastComponent = this.appendComponent(component, color, lastColor, lastComponent);
-            lastColor = color;
-        }
-
-        return component;
-    }
-
-    private MutableComponent appendComponent(MutableComponent parent, int color, int lastColor, MutableComponent lastComponent) {
-        MutableComponent component;
-
-        // Handle transparency
-        int alpha = color >>> 24;
-        if (alpha <= 127) {
-            component = Component.literal(SPACE);
-            // Try to hide the full block space character the best we can by coloring it black
-            component.setStyle(Style.EMPTY.withColor(ChatFormatting.BLACK));
-            parent.append(component);
-            return component;
-        } else {
-            color &= 0x00FFFFFF;
-        }
-
-        if (color == lastColor && lastComponent != null && lastComponent.getContents() instanceof LiteralContents literalContents) {
-            // Add the character to the last component (with the same color)
-            component = Component.literal(literalContents.text() + BLOCK);
-            component.setStyle(lastComponent.getStyle());
-
-            // Replace old component
-            parent.getSiblings().set(parent.getSiblings().size() - 1, component);
-        } else {
-            // Add a new component
-            component = Component.literal(BLOCK);
-            component.setStyle(Style.EMPTY.withColor(TextColor.fromRgb(color)));
-            parent.append(component);
-        }
-        return component;
+    @Override
+    public HologramPropertyProvider getHologramPropertyProvider() {
+        return HologramPropertyProviderImpl.getInstance();
     }
 
 }
