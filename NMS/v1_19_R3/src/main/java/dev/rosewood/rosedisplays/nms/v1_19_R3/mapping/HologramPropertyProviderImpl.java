@@ -1,6 +1,8 @@
 package dev.rosewood.rosedisplays.nms.v1_19_R3.mapping;
 
 import dev.rosewood.rosedisplays.hologram.HologramLineType;
+import dev.rosewood.rosedisplays.model.BillboardConstraint;
+import dev.rosewood.rosedisplays.model.BrightnessOverride;
 import dev.rosewood.rosedisplays.model.ItemDisplayType;
 import dev.rosewood.rosedisplays.model.Quaternion;
 import dev.rosewood.rosedisplays.model.TextDisplayProperties;
@@ -8,7 +10,6 @@ import dev.rosewood.rosedisplays.model.Vector3;
 import dev.rosewood.rosedisplays.property.HologramProperty;
 import dev.rosewood.rosedisplays.property.HologramPropertyProvider;
 import java.awt.Color;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,23 +26,26 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_19_R3.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_19_R3.util.CraftChatMessage;
-import org.bukkit.inventory.ItemStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class HologramPropertyProviderImpl implements HologramPropertyProvider {
 
-    private static final Map<HologramLineType, Map<String, HologramPropertyMapping<?, ?>>> properties;
-    private static final Map<String, HologramPropertyMapping<?, ?>> propertiesByName;
+    private static final Map<HologramLineType, Map<String, HologramPropertyMapping<?, ?>>> PROPERTY_MAPPINGS;
+    private static final Map<String, HologramPropertyMapping<?, ?>> PROPERTY_MAPPINGS_BY_NAME;
     static {
-        properties = new EnumMap<>(HologramLineType.class);
-        Stream.of(HologramLineType.values()).forEach(type -> properties.put(type, new HashMap<>()));
+        PROPERTY_MAPPINGS = new EnumMap<>(HologramLineType.class);
+        Stream.of(HologramLineType.values()).forEach(type -> PROPERTY_MAPPINGS.put(type, new HashMap<>()));
 
         Function<Vector3, Vector3f> VECTOR3_TRANSFORMER = vec -> new Vector3f(vec.x(), vec.y(), vec.z());
         Function<Quaternion, Quaternionf> QUATERNION_TRANSFORMER = quat -> new Quaternionf(quat.x(), quat.y(), quat.z(), quat.w());
         Function<ItemDisplayType, Byte> ITEMDISPLAYTYPE_TRANSFORMER = type -> (byte) type.ordinal();
+        Function<BillboardConstraint, Byte> BILLBOARDCONSTRAINT_TRANSFORMER = constraint -> (byte) constraint.ordinal();
         Function<BlockData, BlockState> BLOCKDATA_TRANSFORMER = data -> ((CraftBlockData) data).getState();
         Function<String, Component> TEXT_TRANSFORMER = text -> CraftChatMessage.fromStringOrNull(text, true);
+        Function<Color, Integer> COLOR_TRANSFORMER = Color::getRGB;
+        Function<Boolean, Byte> GLOWING_TRANSFORMER = glowing -> (byte) (glowing ? 0x40 : 0x00);
+        Function<BrightnessOverride, Integer> BRIGHTNESSOVERRIDE_TRANSFORMER = override -> (override.blockLight() << 4) | (override.skyLight() << 20);
         Function<TextDisplayProperties, Byte> TEXTDISPLAYPROPERTIES_TRANSFORMER = props -> {
             byte value = 0;
             if (props.hasShadow()) value |= 0x01;
@@ -52,38 +56,39 @@ public class HologramPropertyProviderImpl implements HologramPropertyProvider {
         };
 
         // All
-        define("interpolation_delay", 8, Integer.class, EntityDataSerializers.INT, Function.identity());
-        define("interpolation_duration", 9, Integer.class, EntityDataSerializers.INT, Function.identity());
-        define("translation", 10, Vector3.class, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER);
-        define("scale", 11, Vector3.class, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER);
-        define("rotation_left", 12, Quaternion.class, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER);
-        define("rotation_right", 13, Quaternion.class, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER);
-        define("billboard_constraint", 14, Byte.class, EntityDataSerializers.BYTE, Function.identity());
-        define("brightness_override", 15, Integer.class, EntityDataSerializers.INT, Function.identity());
-        define("view_range", 16, Float.class, EntityDataSerializers.FLOAT, Function.identity());
-        define("shadow_radius", 17, Float.class, EntityDataSerializers.FLOAT, Function.identity());
-        define("shadow_strength", 18, Float.class, EntityDataSerializers.FLOAT, Function.identity());
-        define("width", 19, Float.class, EntityDataSerializers.FLOAT, Function.identity());
-        define("height", 20, Float.class, EntityDataSerializers.FLOAT, Function.identity());
-        define("glow_color_override", 21, Integer.class, EntityDataSerializers.INT, Function.identity());
+        define(HologramProperty.GLOWING, 0, EntityDataSerializers.BYTE, GLOWING_TRANSFORMER);
+        define(HologramProperty.INTERPOLATION_DELAY, 8, EntityDataSerializers.INT, Function.identity());
+        define(HologramProperty.INTERPOLATION_DURATION, 9, EntityDataSerializers.INT, Function.identity());
+        define(HologramProperty.TRANSLATION, 10, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER);
+        define(HologramProperty.SCALE, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER);
+        define(HologramProperty.ROTATION_LEFT, 12, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER);
+        define(HologramProperty.ROTATION_RIGHT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER);
+        define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER);
+        define(HologramProperty.BRIGHTNESS_OVERRIDE, 15, EntityDataSerializers.INT, BRIGHTNESSOVERRIDE_TRANSFORMER);
+        define(HologramProperty.VIEW_RANGE, 16, EntityDataSerializers.FLOAT, Function.identity());
+        define(HologramProperty.SHADOW_RADIUS, 17, EntityDataSerializers.FLOAT, Function.identity());
+        define(HologramProperty.SHADOW_STRENGTH, 18, EntityDataSerializers.FLOAT, Function.identity());
+        define(HologramProperty.WIDTH, 19, EntityDataSerializers.FLOAT, Function.identity());
+        define(HologramProperty.HEIGHT, 20, EntityDataSerializers.FLOAT, Function.identity());
+        define(HologramProperty.GLOW_COLOR_OVERRIDE, 21, EntityDataSerializers.INT, COLOR_TRANSFORMER);
 
         // Text Display
-        define("text", 22, String.class, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, HologramLineType.TEXT);
-        define("line_width", 23, Integer.class, EntityDataSerializers.INT, Function.identity(), HologramLineType.TEXT);
-        define("background_color", 24, Color.class, EntityDataSerializers.INT, Color::getRGB, HologramLineType.TEXT);
-        define("text_opacity", 25, Byte.class, EntityDataSerializers.BYTE, Function.identity(), HologramLineType.TEXT);
-        define("bit_mask", 26, TextDisplayProperties.class, EntityDataSerializers.BYTE, TEXTDISPLAYPROPERTIES_TRANSFORMER, HologramLineType.TEXT);
+        define(HologramProperty.TEXT, 22, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, HologramLineType.TEXT);
+        define(HologramProperty.LINE_WIDTH, 23, EntityDataSerializers.INT, Function.identity(), HologramLineType.TEXT);
+        define(HologramProperty.BACKGROUND_COLOR, 24, EntityDataSerializers.INT, COLOR_TRANSFORMER, HologramLineType.TEXT);
+        define(HologramProperty.TEXT_OPACITY, 25, EntityDataSerializers.BYTE, Function.identity(), HologramLineType.TEXT);
+        define(HologramProperty.BIT_MASK, 26, EntityDataSerializers.BYTE, TEXTDISPLAYPROPERTIES_TRANSFORMER, HologramLineType.TEXT);
 
         // Item Display
-        define("item", 22, ItemStack.class, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, HologramLineType.ITEM);
-        define("display_type", 23, ItemDisplayType.class, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, HologramLineType.ITEM);
+        define(HologramProperty.ITEM, 22, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, HologramLineType.ITEM);
+        define(HologramProperty.DISPLAY_TYPE, 23, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, HologramLineType.ITEM);
 
         // Block Display
-        define("block_data", 22, BlockData.class, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, HologramLineType.BLOCK);
+        define(HologramProperty.BLOCK_DATA, 22, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, HologramLineType.BLOCK);
 
-        propertiesByName = properties.values().stream()
+        PROPERTY_MAPPINGS_BY_NAME = PROPERTY_MAPPINGS.values().stream()
                 .flatMap(map -> map.values().stream())
-                .collect(Collectors.toMap(HologramPropertyMapping::property, Function.identity()));
+                .collect(Collectors.toMap(x -> x.property().getName(), Function.identity()));
     }
 
     private static final HologramPropertyProviderImpl INSTANCE = new HologramPropertyProviderImpl();
@@ -95,33 +100,35 @@ public class HologramPropertyProviderImpl implements HologramPropertyProvider {
 
     }
 
-    private static <T, R> void define(String name, int accessorId, Class<T> propertyType, EntityDataSerializer<R> entityDataSerializer, Function<T, R> transformer, HologramLineType... lineTypes) {
+    private static <T, R> void define(HologramProperty<T> property, int accessorId, EntityDataSerializer<R> entityDataSerializer, Function<T, R> transformer, HologramLineType... lineTypes) {
         EntityDataAccessor<R> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
-        HologramPropertyMapping<T, R> mapping = new HologramPropertyMapping<>(name, propertyType, entityDataAccessor, transformer);
+        HologramPropertyMapping<T, R> mapping = new HologramPropertyMapping<>(property, entityDataAccessor, transformer);
         if (lineTypes.length == 0) { // All
-            properties.values().forEach(map -> map.put(name, mapping));
+            PROPERTY_MAPPINGS.values().forEach(map -> map.put(property.getName(), mapping));
         } else {
-            Stream.of(lineTypes).forEach(type -> properties.get(type).put(name, mapping));
+            Stream.of(lineTypes).forEach(type -> PROPERTY_MAPPINGS.get(type).put(property.getName(), mapping));
         }
     }
 
     @Override
     public Map<String, HologramProperty<?>> getProperties(HologramLineType type) {
-        return Collections.unmodifiableMap(properties.get(type));
+        return PROPERTY_MAPPINGS.get(type).entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, entry -> entry.getValue().property()));
     }
 
     @Override
     public Map<String, HologramProperty<?>> getAllProperties() {
-        return Collections.unmodifiableMap(propertiesByName);
+        return PROPERTY_MAPPINGS_BY_NAME.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, entry -> entry.getValue().property()));
     }
 
     @SuppressWarnings("unchecked")
     public <T> SynchedEntityData.DataValue<?> createDataValue(String name, T value) {
-        HologramPropertyMapping<?, ?> mapping = propertiesByName.get(name);
+        HologramPropertyMapping<?, ?> mapping = PROPERTY_MAPPINGS_BY_NAME.get(name);
         if (mapping == null)
             throw new IllegalArgumentException("Unknown property " + name + "!");
-        if (mapping.propertyType() != value.getClass())
-            throw new IllegalArgumentException("Value type " + value.getClass().getName() + " does not match property type " + mapping.propertyType().getName() + "!");
+        if (mapping.property().getType() != value.getClass())
+            throw new IllegalArgumentException("Value type " + value.getClass().getName() + " does not match property type " + mapping.property().getName() + "!");
         return ((HologramPropertyMapping<T, ?>) mapping).createDataValue(value);
     }
 

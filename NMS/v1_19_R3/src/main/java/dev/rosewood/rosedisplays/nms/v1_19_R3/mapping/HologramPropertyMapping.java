@@ -5,10 +5,9 @@ import java.util.function.Function;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 
-public record HologramPropertyMapping<T, R>(String property,
-                                            Class<T> propertyType,
+public record HologramPropertyMapping<T, R>(HologramProperty<T> property,
                                             EntityDataAccessor<R> entityDataAccessor,
-                                            Function<T, R> transformer) implements HologramProperty<T> {
+                                            Function<T, R> transformer) {
 
     public SynchedEntityData.DataValue<R> createDataValue(T value) {
         R transformed = this.transformer.apply(value);
