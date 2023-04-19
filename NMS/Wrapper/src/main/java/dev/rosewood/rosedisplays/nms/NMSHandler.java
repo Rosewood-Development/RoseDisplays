@@ -1,20 +1,20 @@
 package dev.rosewood.rosedisplays.nms;
 
-import dev.rosewood.rosedisplays.property.HologramPropertyProvider;
+import dev.rosewood.rosedisplays.hologram.HologramLine;
+import dev.rosewood.rosedisplays.hologram.property.VersionAvailabilityProvider;
 import java.util.Collection;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public interface NMSHandler {
 
-    void sendHologramSpawnPacket(Collection<Player> players, int entityId, Location location);
+    void sendHologramSpawnPacket(HologramLine hologramLine, int entityId, Collection<Player> players);
 
-    void sendHologramMetadataPacket(Collection<Player> players, int entityId, String text);
+    void sendHologramMetadataPacket(HologramLine hologramLine, int entityId, Collection<Player> players);
 
     void sendHologramDespawnPacket(Collection<Player> players, int entityId);
 
     int getNextAvailableEntityId();
 
-    HologramPropertyProvider getHologramPropertyProvider();
+    VersionAvailabilityProvider getVersionAvailablilityProvider();
 
 }

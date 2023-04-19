@@ -7,11 +7,14 @@ import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.util.List;
+import org.bukkit.NamespacedKey;
 
 /**
  * @author Esophose
  */
 public class RoseDisplays extends RosePlugin {
+
+    public final static NamespacedKey HOLOGRAM_KEY = new NamespacedKey(RoseDisplays.getInstance(), "holograms");
 
     /**
      * The running instance of RoseDisplays on the server

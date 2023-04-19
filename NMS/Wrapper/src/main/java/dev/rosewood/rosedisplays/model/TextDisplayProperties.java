@@ -13,7 +13,7 @@ public record TextDisplayProperties(boolean hasShadow,
         return new TextDisplayProperties(this.hasShadow, isSeeThrough, this.useDefaultBackgroundColor, this.alignment);
     }
 
-    public TextDisplayProperties withDefaultBackgroundColor(boolean useDefaultBackgroundColor) {
+    public TextDisplayProperties withUseDefaultBackgroundColor(boolean useDefaultBackgroundColor) {
         return new TextDisplayProperties(this.hasShadow, this.isSeeThrough, useDefaultBackgroundColor, this.alignment);
     }
 

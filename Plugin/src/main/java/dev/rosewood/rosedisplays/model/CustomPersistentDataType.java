@@ -25,7 +25,7 @@ public final class CustomPersistentDataType {
                 dataOutput.writeInt(VERSION);
                 dataOutput.writeInt(complex.length);
                 for (UnloadedHologram hologram : complex) {
-                    dataOutput.writeUTF(hologram.id());
+                    dataOutput.writeUTF(hologram.name());
                     dataOutput.writeUTF(hologram.chunkLocation().world());
                     dataOutput.writeInt(hologram.chunkLocation().x());
                     dataOutput.writeInt(hologram.chunkLocation().z());
