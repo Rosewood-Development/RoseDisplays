@@ -6,10 +6,8 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class CreateCommand extends RoseCommand {
@@ -19,7 +17,7 @@ public class CreateCommand extends RoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, String name, @Optional Location location) {
+    public void execute(CommandContext context, String name) {
         if (!(context.getSender() instanceof Player player))
             throw new IllegalStateException();
 
@@ -30,16 +28,13 @@ public class CreateCommand extends RoseCommand {
             return;
         }
 
-        if (location == null)
-            location = player.getLocation();
-
-        hologramManager.createHologram(name, location);
+        hologramManager.createHologram(name, player.getLocation());
         localeManager.sendMessage(context.getSender(), "command-create-success", StringPlaceholders.of("name", name));
     }
 
     @Override
     protected String getDefaultName() {
-        return "edit";
+        return "create";
     }
 
     @Override

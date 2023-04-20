@@ -12,10 +12,12 @@ import dev.rosewood.rosedisplays.model.ChunkLocation;
 import dev.rosewood.rosedisplays.model.CustomPersistentDataType;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import java.util.Arrays;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +30,8 @@ import org.bukkit.persistence.PersistentDataContainer;
 
 public class HologramManager extends Manager implements Listener {
 
+    public final static NamespacedKey HOLOGRAM_KEY = new NamespacedKey(RoseDisplays.getInstance(), "holograms");
+
     private final Multimap<ChunkLocation, Hologram> loadedHolograms;
     private final Multimap<ChunkLocation, UnloadedHologram> unloadedHolograms;
 
@@ -38,6 +42,7 @@ public class HologramManager extends Manager implements Listener {
         this.unloadedHolograms = MultimapBuilder.hashKeys().arrayListValues().build();
 
         Bukkit.getPluginManager().registerEvents(this, rosePlugin);
+        Bukkit.getScheduler().runTaskTimer(rosePlugin, this::tick, 10L, 10L); // TODO: Change this value and run async
     }
 
     @Override
@@ -53,12 +58,16 @@ public class HologramManager extends Manager implements Listener {
         this.unloadedHolograms.clear();
     }
 
+    private void tick() {
+        this.loadedHolograms.values().forEach(x -> x.getRenderer().render(x));
+    }
+
     public Hologram createHologram(String name, Location location) {
         if (this.getHologram(name) != null)
             throw new IllegalArgumentException("A hologram with the name " + name + " already exists");
 
         Hologram hologram = new Hologram(name, location);
-        HologramLine line = new HologramLine(HologramLineType.TEXT);
+        HologramLine line = new HologramLine(HologramLineType.TEXT, location);
         line.setProperty(HologramProperty.TEXT, "New Hologram");
         hologram.addLine(line);
         this.loadedHolograms.put(ChunkLocation.of(location), hologram);
@@ -90,7 +99,7 @@ public class HologramManager extends Manager implements Listener {
 
     public void loadHolograms(Chunk chunk) {
         PersistentDataContainer pdc = chunk.getPersistentDataContainer();
-        Hologram[] holograms = pdc.get(RoseDisplays.HOLOGRAM_KEY, CustomPersistentDataType.HOLOGRAM_ARRAY);
+        Hologram[] holograms = pdc.get(HOLOGRAM_KEY, CustomPersistentDataType.HOLOGRAM_ARRAY);
         if (holograms == null)
             return;
 
@@ -99,7 +108,7 @@ public class HologramManager extends Manager implements Listener {
         if (unloaded != holograms.length)
             RoseDisplays.getInstance().getLogger().warning("Expected " + unloaded + " holograms in chunk " + chunkLocation + " but " + holograms.length + " were found. Loading them anyway.");
 
-        this.loadedHolograms.putAll(chunkLocation, List.of(holograms));
+        this.loadedHolograms.putAll(chunkLocation, Arrays.asList(holograms));
     }
 
     public void unloadHolograms(Chunk chunk, boolean unloadingWorld) {

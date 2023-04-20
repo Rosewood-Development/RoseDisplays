@@ -29,9 +29,15 @@ import org.joml.Vector3f;
 
 public class HologramPropertyMappings implements VersionAvailabilityProvider {
 
-    private static final Map<HologramProperty<?>, HologramPropertyMapping<?, ?>> PROPERTY_MAPPINGS;
-    static {
-        PROPERTY_MAPPINGS = new HashMap<>();
+    private static final HologramPropertyMappings INSTANCE = new HologramPropertyMappings();
+    public static HologramPropertyMappings getInstance() {
+        return INSTANCE;
+    }
+
+    private final Map<HologramProperty<?>, HologramPropertyMapping<?, ?>> propertyMappings;
+
+    private HologramPropertyMappings() {
+        this.propertyMappings = new HashMap<>();
 
         Function<Vector3, Vector3f> VECTOR3_TRANSFORMER = vec -> new Vector3f(vec.x(), vec.y(), vec.z());
         Function<Quaternion, Quaternionf> QUATERNION_TRANSFORMER = quat -> new Quaternionf(quat.x(), quat.y(), quat.z(), quat.w());
@@ -52,55 +58,46 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         };
 
         // All
-        define(HologramProperty.GLOWING, 0, EntityDataSerializers.BYTE, GLOWING_TRANSFORMER, (byte) 0);
-        define(HologramProperty.INTERPOLATION_DELAY, 8, EntityDataSerializers.INT, Function.identity(), 0);
-        define(HologramProperty.INTERPOLATION_DURATION, 9, EntityDataSerializers.INT, Function.identity(), 0);
-        define(HologramProperty.TRANSLATION, 10, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(0, 0, 0));
-        define(HologramProperty.SCALE, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(1, 1, 1));
-        define(HologramProperty.ROTATION_LEFT, 12, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
-        define(HologramProperty.ROTATION_RIGHT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
-        define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 0);
-        define(HologramProperty.BRIGHTNESS_OVERRIDE, 15, EntityDataSerializers.INT, BRIGHTNESSOVERRIDE_TRANSFORMER, -1);
-        define(HologramProperty.VIEW_RANGE, 16, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
-        define(HologramProperty.SHADOW_RADIUS, 17, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        define(HologramProperty.SHADOW_STRENGTH, 18, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
-        define(HologramProperty.WIDTH, 19, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        define(HologramProperty.HEIGHT, 20, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        define(HologramProperty.GLOW_COLOR_OVERRIDE, 21, EntityDataSerializers.INT, COLOR_TRANSFORMER, -1);
+        this.define(HologramProperty.GLOWING, 0, EntityDataSerializers.BYTE, GLOWING_TRANSFORMER, (byte) 0);
+        this.define(HologramProperty.INTERPOLATION_DELAY, 8, EntityDataSerializers.INT, Function.identity(), 0);
+        this.define(HologramProperty.INTERPOLATION_DURATION, 9, EntityDataSerializers.INT, Function.identity(), 0);
+        this.define(HologramProperty.TRANSLATION, 10, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(0, 0, 0));
+        this.define(HologramProperty.SCALE, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(1, 1, 1));
+        this.define(HologramProperty.ROTATION_LEFT, 12, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
+        this.define(HologramProperty.ROTATION_RIGHT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
+        this.define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 3);
+        this.define(HologramProperty.BRIGHTNESS_OVERRIDE, 15, EntityDataSerializers.INT, BRIGHTNESSOVERRIDE_TRANSFORMER, -1);
+        this.define(HologramProperty.VIEW_RANGE, 16, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
+        this.define(HologramProperty.SHADOW_RADIUS, 17, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.SHADOW_STRENGTH, 18, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
+        this.define(HologramProperty.WIDTH, 19, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.HEIGHT, 20, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.GLOW_COLOR_OVERRIDE, 21, EntityDataSerializers.INT, COLOR_TRANSFORMER, -1);
 
         // Text Display
-        define(HologramProperty.TEXT, 22, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(""));
-        define(HologramProperty.LINE_WIDTH, 23, EntityDataSerializers.INT, Function.identity(), 200);
-        define(HologramProperty.BACKGROUND_COLOR, 24, EntityDataSerializers.INT, COLOR_TRANSFORMER, 0x40000000);
-        define(HologramProperty.TEXT_OPACITY, 25, EntityDataSerializers.BYTE, Function.identity(), (byte) -1);
-        define(HologramProperty.BIT_MASK, 26, EntityDataSerializers.BYTE, TEXTDISPLAYPROPERTIES_TRANSFORMER, (byte) 0);
+        this.define(HologramProperty.TEXT, 22, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(""));
+        this.define(HologramProperty.LINE_WIDTH, 23, EntityDataSerializers.INT, Function.identity(), 200);
+        this.define(HologramProperty.BACKGROUND_COLOR, 24, EntityDataSerializers.INT, COLOR_TRANSFORMER, 0x40000000);
+        this.define(HologramProperty.TEXT_OPACITY, 25, EntityDataSerializers.BYTE, Function.identity(), (byte) -1);
+        this.define(HologramProperty.BIT_MASK, 26, EntityDataSerializers.BYTE, TEXTDISPLAYPROPERTIES_TRANSFORMER, (byte) 0);
 
         // Item Display
-        define(HologramProperty.ITEM, 22, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, ItemStack.EMPTY);
-        define(HologramProperty.DISPLAY_TYPE, 23, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, (byte) 0);
+        this.define(HologramProperty.ITEM, 22, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, ItemStack.EMPTY);
+        this.define(HologramProperty.DISPLAY_TYPE, 23, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, (byte) 0);
 
         // Block Display
-        define(HologramProperty.BLOCK_DATA, 22, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, ((CraftBlockData) Material.AIR.createBlockData()).getState());
+        this.define(HologramProperty.BLOCK_DATA, 22, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, ((CraftBlockData) Material.AIR.createBlockData()).getState());
     }
 
-    private static final HologramPropertyMappings INSTANCE = new HologramPropertyMappings();
-    public static HologramPropertyMappings getInstance() {
-        return INSTANCE;
-    }
-
-    private HologramPropertyMappings() {
-
-    }
-
-    private static <T, R> void define(HologramProperty<T> property, int accessorId, EntityDataSerializer<R> entityDataSerializer, Function<T, R> transformer, R defaultValue) {
+    private <T, R> void define(HologramProperty<T> property, int accessorId, EntityDataSerializer<R> entityDataSerializer, Function<T, R> transformer, R defaultValue) {
         EntityDataAccessor<R> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
         HologramPropertyMapping<T, R> mapping = new HologramPropertyMapping<>(property, entityDataAccessor, transformer, defaultValue);
-        PROPERTY_MAPPINGS.put(property, mapping);
+        this.propertyMappings.put(property, mapping);
     }
 
     @SuppressWarnings("unchecked")
     public <T> SynchedEntityData.DataValue<?> createDataValue(HologramProperty<T> property, Object value) {
-        HologramPropertyMapping<?, ?> mapping = PROPERTY_MAPPINGS.get(property);
+        HologramPropertyMapping<?, ?> mapping = this.propertyMappings.get(property);
         if (mapping == null)
             throw new IllegalArgumentException("Unknown property " + property.getName() + "!");
 
@@ -115,7 +112,7 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
 
     @Override
     public boolean isAvailable(HologramProperty<?> property) {
-        return PROPERTY_MAPPINGS.containsKey(property);
+        return this.propertyMappings.containsKey(property);
     }
 
 }

@@ -4,17 +4,16 @@ import dev.rosewood.rosedisplays.manager.CommandManager;
 import dev.rosewood.rosedisplays.manager.ConfigurationManager;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
+import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.util.List;
-import org.bukkit.NamespacedKey;
+import org.bukkit.Bukkit;
 
 /**
  * @author Esophose
  */
 public class RoseDisplays extends RosePlugin {
-
-    public final static NamespacedKey HOLOGRAM_KEY = new NamespacedKey(RoseDisplays.getInstance(), "holograms");
 
     /**
      * The running instance of RoseDisplays on the server
@@ -33,7 +32,11 @@ public class RoseDisplays extends RosePlugin {
 
     @Override
     public void enable() {
-
+        if (!NMSAdapter.isValidVersion()) {
+            this.getLogger().severe("RoseDisplays only supports 1.19.4+. The plugin has been disabled.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
     }
 
     @Override

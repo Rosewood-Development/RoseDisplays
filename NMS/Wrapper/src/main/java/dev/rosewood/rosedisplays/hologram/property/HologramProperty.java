@@ -1,5 +1,7 @@
 package dev.rosewood.rosedisplays.hologram.property;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import dev.rosewood.rosedisplays.hologram.HologramLineType;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
 import dev.rosewood.rosedisplays.model.BrightnessOverride;
@@ -10,8 +12,10 @@ import dev.rosewood.rosedisplays.model.TextDisplayProperties;
 import dev.rosewood.rosedisplays.model.Vector3;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import java.awt.Color;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +26,10 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
 public final class HologramProperty<T> {
+
+    private static final Set<HologramProperty<?>> KNOWN_PROPERTIES = new HashSet<>();
+    private static final Set<HologramProperty<?>> AVAILABLE_PROPERTIES = new HashSet<>();
+    private static final Multimap<HologramLineType, HologramProperty<?>> AVAILABLE_PROPERTIES_BY_TYPE = MultimapBuilder.enumKeys(HologramLineType.class).arrayListValues().build();
 
     // All
     public static final HologramProperty<Boolean> GLOWING = new HologramProperty<>("glowing", Boolean.class);
@@ -62,10 +70,20 @@ public final class HologramProperty<T> {
     // Block Display
     public static final HologramProperty<BlockData> BLOCK_DATA = new HologramProperty<>("block_data", BlockData.class, HologramLineType.BLOCK);
 
+    static {
+        // This has to be down here instead of in the HologramProperty constructor since it can cause a circular dependency
+        VersionAvailabilityProvider versionAvailabilityProvider = NMSAdapter.getHandler().getVersionAvailabilityProvider();
+        KNOWN_PROPERTIES.forEach(property -> {
+            if (versionAvailabilityProvider.isAvailable(property)) {
+                AVAILABLE_PROPERTIES.add(property);
+                property.getLineTypes().forEach(lineType -> AVAILABLE_PROPERTIES_BY_TYPE.put(lineType, property));
+            }
+        });
+    }
+
     private final String name;
     private final Class<T> type;
     private final Set<HologramLineType> lineTypes;
-    private final boolean isAvailable;
     private final Map<String, HologramPropertyModifier<?, T>> modifiers;
 
     private HologramProperty(String name, Class<T> type, HologramLineType lineType, List<HologramPropertyModifier<?, T>> modifiers) {
@@ -73,7 +91,7 @@ public final class HologramProperty<T> {
         this.type = type;
         this.lineTypes = lineType == null ? EnumSet.allOf(HologramLineType.class) : EnumSet.of(lineType);
         this.modifiers = modifiers.stream().collect(Collectors.toMap(HologramPropertyModifier::getName, Function.identity()));
-        this.isAvailable = NMSAdapter.getHandler().getVersionAvailablilityProvider().isAvailable(this);
+        KNOWN_PROPERTIES.add(this);
     }
 
     private HologramProperty(String name, Class<T> type, List<HologramPropertyModifier<?, T>> modifiers) {
@@ -105,7 +123,7 @@ public final class HologramProperty<T> {
     }
 
     public boolean isAvailable() {
-        return this.isAvailable;
+        return AVAILABLE_PROPERTIES.contains(this);
     }
 
     public Map<String, HologramPropertyModifier<?, T>> getModifiers() {
@@ -130,6 +148,14 @@ public final class HologramProperty<T> {
         return "HologramProperty[" +
                 "name=" + this.name + ", " +
                 "type=" + this.type + ']';
+    }
+
+    public static Collection<HologramProperty<?>> values() {
+        return Collections.unmodifiableCollection(AVAILABLE_PROPERTIES);
+    }
+
+    public static Collection<HologramProperty<?>> values(HologramLineType lineType) {
+        return Collections.unmodifiableCollection(AVAILABLE_PROPERTIES_BY_TYPE.get(lineType));
     }
 
 }

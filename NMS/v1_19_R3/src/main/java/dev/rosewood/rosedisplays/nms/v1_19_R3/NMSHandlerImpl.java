@@ -33,7 +33,7 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramSpawnPacket(HologramLine hologramLine, int entityId, Collection<Player> players) {
+    public void sendHologramSpawnPacket(HologramLine hologramLine, Collection<Player> players) {
         EntityType<?> entityType = switch (hologramLine.getType()) {
             case TEXT -> EntityType.TEXT_DISPLAY;
             case ITEM -> EntityType.ITEM_DISPLAY;
@@ -42,7 +42,7 @@ public class NMSHandlerImpl implements NMSHandler {
 
         Location location = hologramLine.getLocation();
         ClientboundAddEntityPacket packet = new ClientboundAddEntityPacket(
-                entityId,
+                hologramLine.getEntityId(),
                 UUID.randomUUID(),
                 location.getX(),
                 location.getY(),
@@ -57,24 +57,26 @@ public class NMSHandlerImpl implements NMSHandler {
 
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
+
+        this.sendHologramMetadataPacket(hologramLine, players);
     }
 
     @Override
-    public void sendHologramMetadataPacket(HologramLine hologramLine, int entityId, Collection<Player> players) {
+    public void sendHologramMetadataPacket(HologramLine hologramLine, Collection<Player> players) {
         HologramPropertyMappings mappings = HologramPropertyMappings.getInstance();
 
         List<SynchedEntityData.DataValue<?>> dataValues = new ArrayList<>();
         hologramLine.getDirtyProperties().forEach((property, value)
                 -> dataValues.add(mappings.createDataValue(property, value)));
 
-        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(entityId, dataValues);
+        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
     }
 
     @Override
-    public void sendHologramDespawnPacket(Collection<Player> players, int entityId) {
-        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(entityId);
+    public void sendHologramDespawnPacket(HologramLine hologramLine, Collection<Player> players) {
+        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologramLine.getEntityId());
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
     }
@@ -85,7 +87,7 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public VersionAvailabilityProvider getVersionAvailablilityProvider() {
+    public VersionAvailabilityProvider getVersionAvailabilityProvider() {
         return HologramPropertyMappings.getInstance();
     }
 

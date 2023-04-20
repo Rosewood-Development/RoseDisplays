@@ -1,6 +1,7 @@
 package dev.rosewood.rosedisplays.hologram;
 
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
+import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,12 +15,14 @@ public class HologramLine {
     private final Location location;
     private final Map<HologramProperty<?>, Object> properties;
     private final Set<HologramProperty<?>> dirtyProperties;
+    private final int entityId;
 
     public HologramLine(HologramLineType type, Location location) {
         this.type = type;
         this.location = location;
         this.properties = new HashMap<>();
         this.dirtyProperties = new HashSet<>();
+        this.entityId = NMSAdapter.getHandler().getNextAvailableEntityId();
     }
 
     public HologramLineType getType() {
@@ -28,6 +31,10 @@ public class HologramLine {
 
     public Location getLocation() {
         return this.location;
+    }
+
+    public int getEntityId() {
+        return this.entityId;
     }
 
     public Map<HologramProperty<?>, ?> getProperties() {
@@ -44,6 +51,10 @@ public class HologramLine {
 
         this.dirtyProperties.clear();
         return dirtyProperties;
+    }
+
+    public boolean isDirty() {
+        return !this.dirtyProperties.isEmpty();
     }
 
     public <T> void setProperty(HologramProperty<T> property, T value) {
