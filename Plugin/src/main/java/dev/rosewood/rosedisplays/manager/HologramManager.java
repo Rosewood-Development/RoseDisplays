@@ -4,14 +4,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import dev.rosewood.rosedisplays.RoseDisplays;
 import dev.rosewood.rosedisplays.hologram.Hologram;
-import dev.rosewood.rosedisplays.hologram.HologramLine;
-import dev.rosewood.rosedisplays.hologram.HologramLineType;
 import dev.rosewood.rosedisplays.hologram.UnloadedHologram;
-import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import dev.rosewood.rosedisplays.model.CustomPersistentDataType;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -67,25 +65,57 @@ public class HologramManager extends Manager implements Listener {
             throw new IllegalArgumentException("A hologram with the name " + name + " already exists");
 
         Hologram hologram = new Hologram(name, location);
-        HologramLine line = new HologramLine(HologramLineType.TEXT, location);
-        line.setProperty(HologramProperty.TEXT, "New Hologram");
-        hologram.addLine(line);
         this.loadedHolograms.put(ChunkLocation.of(location), hologram);
         return hologram;
     }
 
     public Hologram getHologram(String name) {
+        Hologram loadedHologram = this.loadedHolograms.values().stream()
+                .filter(hologram -> hologram.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+
+        if (loadedHologram != null)
+            return loadedHologram;
+
+        UnloadedHologram unloadedHologram = this.unloadedHolograms.values().stream()
+                .filter(hologram -> hologram.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+
+        if (unloadedHologram == null)
+            return null;
+
+        // Force load the hologram
+        ChunkLocation chunkLocation = unloadedHologram.getChunkLocation();
+        World world = Bukkit.getWorld(chunkLocation.world());
+        if (world == null)
+            return null;
+
+        // Load the chunk and holograms, keep the chunk loaded for minimum 30 seconds
+        Chunk chunk = world.getChunkAt(chunkLocation.x(), chunkLocation.z());
+        chunk.addPluginChunkTicket(RoseDisplays.getInstance());
+        Bukkit.getScheduler().runTaskLater(RoseDisplays.getInstance(), () -> chunk.removePluginChunkTicket(RoseDisplays.getInstance()), 600L);
+        this.loadHolograms(chunk);
+
         return this.loadedHolograms.values().stream()
                 .filter(hologram -> hologram.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
     }
 
+    public List<String> getHologramNames() {
+        List<String> names = new ArrayList<>();
+        this.loadedHolograms.values().forEach(hologram -> names.add(hologram.getName()));
+        this.unloadedHolograms.values().forEach(hologram -> names.add(hologram.getName()));
+        return names;
+    }
+
     public void loadHolograms(World world) {
         List<UnloadedHologram> unloadedHolograms = UnloadedHologram.fromWorld(world);
-        unloadedHolograms.forEach(x -> this.unloadedHolograms.put(x.chunkLocation(), x));
+        unloadedHolograms.forEach(x -> this.unloadedHolograms.put(x.getChunkLocation(), x));
         unloadedHolograms.stream()
-                .map(UnloadedHologram::chunkLocation)
+                .map(UnloadedHologram::getChunkLocation)
                 .distinct()
                 .filter(chunkLocation -> world.isChunkLoaded(chunkLocation.x(), chunkLocation.z()))
                 .map(chunkLocation -> world.getChunkAt(chunkLocation.x(), chunkLocation.z()))
@@ -94,7 +124,15 @@ public class HologramManager extends Manager implements Listener {
 
     public void unloadHolograms(World world) {
         for (Chunk chunk : world.getLoadedChunks())
-            this.unloadHolograms(chunk, true);
+            this.unloadHolograms(chunk);
+
+        List<UnloadedHologram> worldHolograms = new ArrayList<>();
+        for (UnloadedHologram unloadedHologram : this.unloadedHolograms.values())
+            if (unloadedHologram.getChunkLocation().world().equals(world.getName()))
+                worldHolograms.add(unloadedHologram);
+        this.unloadedHolograms.values().removeAll(worldHolograms);
+
+        UnloadedHologram.saveWorld(world, worldHolograms);
     }
 
     public void loadHolograms(Chunk chunk) {
@@ -111,18 +149,12 @@ public class HologramManager extends Manager implements Listener {
         this.loadedHolograms.putAll(chunkLocation, Arrays.asList(holograms));
     }
 
-    public void unloadHolograms(Chunk chunk, boolean unloadingWorld) {
+    public void unloadHolograms(Chunk chunk) {
         ChunkLocation chunkLocation = ChunkLocation.of(chunk);
-        this.loadedHolograms.removeAll(chunkLocation);
-
-        if (unloadingWorld) {
-            this.unloadedHolograms.removeAll(chunkLocation);
-        } else {
-            this.loadedHolograms.get(chunkLocation).forEach(hologram -> {
-                UnloadedHologram unloadedHologram = UnloadedHologram.fromHologram(hologram);
-                this.unloadedHolograms.put(chunkLocation, unloadedHologram);
-            });
-        }
+        this.loadedHolograms.removeAll(chunkLocation).forEach(hologram -> {
+            UnloadedHologram unloadedHologram = UnloadedHologram.fromHologram(hologram);
+            this.unloadedHolograms.put(chunkLocation, unloadedHologram);
+        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -142,7 +174,7 @@ public class HologramManager extends Manager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkUnload(ChunkUnloadEvent event) {
-        this.unloadHolograms(event.getChunk(), false);
+        this.unloadHolograms(event.getChunk());
     }
 
 }

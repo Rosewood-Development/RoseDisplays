@@ -1,7 +1,12 @@
 package dev.rosewood.rosedisplays.commands.command;
 
+import dev.rosewood.rosedisplays.hologram.Hologram;
+import dev.rosewood.rosedisplays.hologram.HologramLine;
+import dev.rosewood.rosedisplays.hologram.HologramLineType;
+import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
+import dev.rosewood.rosedisplays.model.BillboardConstraint;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.RoseCommand;
@@ -28,7 +33,12 @@ public class CreateCommand extends RoseCommand {
             return;
         }
 
-        hologramManager.createHologram(name, player.getLocation());
+        Hologram hologram = hologramManager.createHologram(name, player.getLocation().add(0, 1, 0));
+        HologramLine line = new HologramLine(HologramLineType.TEXT, hologram.getLocation());
+        line.setProperty(HologramProperty.TEXT, "New Hologram");
+        line.setProperty(HologramProperty.BILLBOARD_CONSTRAINT, BillboardConstraint.CENTER);
+        hologram.addLine(line);
+
         localeManager.sendMessage(context.getSender(), "command-create-success", StringPlaceholders.of("name", name));
     }
 

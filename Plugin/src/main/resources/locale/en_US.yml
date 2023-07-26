@@ -30,3 +30,17 @@ command-reload-reloaded: '&eConfiguration and locale files were reloaded.'
 command-create-description: 'Creates a new hologram'
 command-create-already-exists: '&cA hologram with the name &b%name% &calready exists.'
 command-create-success: '&aA hologram with the name &b%name% &awas created.'
+
+# Edit Command
+command-edit-description: 'Edits an existing hologram'
+command-edit-success: '&aHologram &b%name% &awas edited.'
+
+# Argument Handler Error Messages
+argument-handler-enum: '%enum% type [%input%] does not exist'
+argument-handler-enum-list: '%enum% type [%input%] does not exist. Valid types: %types%'
+argument-handler-string: 'String cannot be empty'
+argument-handler-integer: 'Integer [%input%] must be a whole number between -2^31 and 2^31-1 inclusively'
+argument-handler-player: 'No Player with the username [%input%] was found online'
+argument-handler-hologram: 'No Hologram with the name [%input%] was found'
+argument-handler-hologram-line: 'No line with the index [%input%] was found'
+argument-handler-hologram-line-numeric: 'Line value [%input%] must be a positive whole number'

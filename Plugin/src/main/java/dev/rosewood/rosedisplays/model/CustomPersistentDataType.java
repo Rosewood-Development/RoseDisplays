@@ -25,10 +25,10 @@ public final class CustomPersistentDataType {
                 dataOutput.writeInt(VERSION);
                 dataOutput.writeInt(complex.length);
                 for (UnloadedHologram hologram : complex) {
-                    dataOutput.writeUTF(hologram.name());
-                    dataOutput.writeUTF(hologram.chunkLocation().world());
-                    dataOutput.writeInt(hologram.chunkLocation().x());
-                    dataOutput.writeInt(hologram.chunkLocation().z());
+                    dataOutput.writeUTF(hologram.getName());
+                    dataOutput.writeUTF(hologram.getChunkLocation().world());
+                    dataOutput.writeInt(hologram.getChunkLocation().x());
+                    dataOutput.writeInt(hologram.getChunkLocation().z());
                 }
                 dataOutput.close();
                 return outputStream.toByteArray();
@@ -77,6 +77,7 @@ public final class CustomPersistentDataType {
                 dataOutput.writeInt(VERSION);
                 dataOutput.writeInt(complex.length);
                 for (Hologram hologram : complex) {
+
                     // todo
                 }
                 dataOutput.close();

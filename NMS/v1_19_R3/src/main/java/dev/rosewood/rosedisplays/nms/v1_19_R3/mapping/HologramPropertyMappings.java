@@ -65,7 +65,7 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         this.define(HologramProperty.SCALE, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(1, 1, 1));
         this.define(HologramProperty.ROTATION_LEFT, 12, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
         this.define(HologramProperty.ROTATION_RIGHT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
-        this.define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 3);
+        this.define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 0);
         this.define(HologramProperty.BRIGHTNESS_OVERRIDE, 15, EntityDataSerializers.INT, BRIGHTNESSOVERRIDE_TRANSFORMER, -1);
         this.define(HologramProperty.VIEW_RANGE, 16, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
         this.define(HologramProperty.SHADOW_RADIUS, 17, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);

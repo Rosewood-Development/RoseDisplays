@@ -19,7 +19,7 @@ public class CommandManager extends AbstractCommandManager {
 
     @Override
     public List<String> getArgumentHandlerPackages() {
-        return List.of("dev.rosewood.rosedisplays.argument");
+        return List.of("dev.rosewood.rosedisplays.commands.argument");
     }
 
 }
