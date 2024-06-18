@@ -33,7 +33,7 @@ public class RoseDisplays extends RosePlugin {
     @Override
     public void enable() {
         if (!NMSAdapter.isValidVersion()) {
-            this.getLogger().severe("RoseDisplays only supports 1.19.4+. The plugin has been disabled.");
+            this.getLogger().severe("RoseDisplays does not support your server version. The plugin has been disabled.");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }

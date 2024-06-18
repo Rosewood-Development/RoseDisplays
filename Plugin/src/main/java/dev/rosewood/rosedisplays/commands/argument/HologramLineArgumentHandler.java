@@ -2,26 +2,25 @@ package dev.rosewood.rosedisplays.commands.argument;
 
 import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramLine;
-import dev.rosewood.rosedisplays.manager.HologramManager;
-import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.framework.ArgumentParser;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
-import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
+import dev.rosewood.rosegarden.command.framework.Argument;
+import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
+import dev.rosewood.rosegarden.command.framework.CommandContext;
+import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class HologramLineArgumentHandler extends RoseCommandArgumentHandler<HologramLine> {
+public class HologramLineArgumentHandler extends ArgumentHandler<HologramLine> {
 
-    public HologramLineArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, HologramLine.class);
+    public HologramLineArgumentHandler() {
+        super(HologramLine.class);
     }
 
     @Override
-    protected HologramLine handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) throws HandledArgumentException {
-        String input = argumentParser.next();
+    public HologramLine handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
+        String input = inputIterator.next();
 
-        Hologram hologram = argumentParser.getContextValue(Hologram.class);
+        Hologram hologram = context.get(Hologram.class);
         if (hologram == null)
             throw new IllegalStateException("HologramLine argument handler called without a valid Hologram");
 
@@ -36,21 +35,14 @@ public class HologramLineArgumentHandler extends RoseCommandArgumentHandler<Holo
         if (lineNumber < 1 || lineNumber > lines.size())
             throw new HandledArgumentException("argument-handler-hologram-line", StringPlaceholders.of("input", input));
 
-        HologramLine line = lines.get(lineNumber - 1);
-        argumentParser.setContextValue(HologramLine.class, line);
-        return line;
+        return lines.get(lineNumber - 1);
     }
 
     @Override
-    protected List<String> suggestInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
-        String hologramName = argumentParser.previous();
-        argumentParser.next();
-
-        Hologram hologram = this.rosePlugin.getManager(HologramManager.class).getHologram(hologramName);
+    public List<String> suggest(CommandContext context, Argument argument, String[] args) {
+        Hologram hologram = context.get(Hologram.class);
         if (hologram == null)
             return List.of();
-
-        argumentParser.setContextValue(Hologram.class, hologram);
 
         List<HologramLine> lines = hologram.getLines();
         if (lines.isEmpty())

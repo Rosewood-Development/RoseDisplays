@@ -9,10 +9,10 @@ compileJava {
 dependencies {
     implementation project(':NMS:Wrapper')
 
-    compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
+    compileOnly "io.papermc.paper:paper-api:$spigotVersion-R0.1-SNAPSHOT"
     compileOnly 'me.clip:placeholderapi:2.10.4'
 
-    api 'dev.rosewood:rosegarden:1.2.3'
+    api "dev.rosewood:rosegarden:$rosegardenVersion"
 }
 
 processResources {

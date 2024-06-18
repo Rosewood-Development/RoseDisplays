@@ -1,74 +1,87 @@
 package dev.rosewood.rosedisplays.commands.command;
 
+import dev.rosewood.rosedisplays.commands.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.RoseSubCommand;
-import dev.rosewood.rosegarden.command.framework.annotation.Inject;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 
-public class EditCommand extends RoseCommand {
+public class EditCommand extends BaseRoseCommand {
 
-    public EditCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public EditCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Hologram hologram, HologramLine line, RoseSubCommand subCommand) {
+    public void execute(CommandContext context, Hologram hologram, HologramLine line) {
 
     }
 
     @Override
-    protected String getDefaultName() {
-        return "edit";
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("edit")
+                .descriptionKey("command-edit-description")
+                .permission("rosedisplays.hologram")
+                .playerOnly()
+                .arguments(ArgumentsDefinition.builder()
+                        .optionalSub(
+                                new SetCommand(this.rosePlugin),
+                                new UnsetCommand(this.rosePlugin)
+                        ))
+                .build();
     }
 
-    @Override
-    public String getDescriptionKey() {
-        return "command-edit-description";
-    }
+    public static class SetCommand extends BaseRoseCommand {
 
-    @Override
-    public String getRequiredPermission() {
-        return "rosedisplays.hologram";
-    }
-
-    public static class SetCommand extends RoseSubCommand {
-
-        public SetCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-            super(rosePlugin, parent);
+        public SetCommand(RosePlugin rosePlugin) {
+            super(rosePlugin);
         }
 
         @RoseExecutable
-        public void execute(@Inject CommandContext context, @Inject Hologram hologram, @Inject HologramLine line, HologramProperty<?> property, String value) {
+        public void execute(CommandContext context, Hologram hologram, HologramLine line, HologramProperty<?> property, String value) {
 
         }
 
         @Override
-        protected String getDefaultName() {
-            return "set";
+        protected CommandInfo createCommandInfo() {
+            return CommandInfo.builder("set")
+                    .arguments(ArgumentsDefinition.builder()
+                            .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                            .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
+                            .required("property", DisplaysArgumentHandlers.HOLOGRAM_PROPERTY)
+                            .required("value", ArgumentHandlers.STRING)
+                            .build())
+                    .build();
         }
 
     }
 
-    public static class UnsetCommand extends RoseSubCommand {
+    public static class UnsetCommand extends BaseRoseCommand {
 
-        public UnsetCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-            super(rosePlugin, parent);
+        public UnsetCommand(RosePlugin rosePlugin) {
+            super(rosePlugin);
         }
 
         @RoseExecutable
-        public void execute(@Inject CommandContext context, @Inject Hologram hologram, @Inject HologramLine line, HologramProperty<?> property) {
-
+        public void execute(CommandContext context, Hologram hologram, HologramLine line, HologramProperty<?> property) {
+            line.getProperties().unset(property);
         }
 
         @Override
-        protected String getDefaultName() {
-            return "unset";
+        protected CommandInfo createCommandInfo() {
+            return CommandInfo.builder("unset")
+                    .arguments(ArgumentsDefinition.builder()
+                            .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                            .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
+                            .required("property", DisplaysArgumentHandlers.HOLOGRAM_PROPERTY)
+                            .build())
+                    .build();
         }
 
     }

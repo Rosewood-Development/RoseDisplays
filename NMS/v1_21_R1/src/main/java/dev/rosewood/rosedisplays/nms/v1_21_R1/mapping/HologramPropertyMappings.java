@@ -1,4 +1,4 @@
-package dev.rosewood.rosedisplays.nms.v1_19_R3.mapping;
+package dev.rosewood.rosedisplays.nms.v1_21_R1.mapping;
 
 import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
@@ -25,9 +25,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_19_R3.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_19_R3.util.CraftChatMessage;
+import org.bukkit.craftbukkit.v1_21_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_21_R1.util.CraftChatMessage;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -59,13 +59,14 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         // All
         this.define(HologramProperty.GLOWING, 0, EntityDataSerializers.BYTE, GLOWING_TRANSFORMER, (byte) 0);
         this.define(HologramProperty.INTERPOLATION_DELAY, 8, EntityDataSerializers.INT, Function.identity(), 0);
-        this.define(HologramProperty.INTERPOLATION_DURATION, 9, EntityDataSerializers.INT, Function.identity(), 0);
-        this.define(HologramProperty.TRANSLATION, 10, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(0, 0, 0));
-        this.define(HologramProperty.SCALE, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(1, 1, 1));
-        this.define(HologramProperty.ROTATION_LEFT, 12, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
-        this.define(HologramProperty.ROTATION_RIGHT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
-        this.define(HologramProperty.BILLBOARD_CONSTRAINT, 14, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 0);
-        this.defineMask(15, EntityDataSerializers.INT, List.of(
+        this.define(HologramProperty.TRANSFORMATION_INTERPOLATION_DURATION, 9, EntityDataSerializers.INT, Function.identity(), 0);
+        this.define(HologramProperty.POSITION_ROTATION_INTERPOLATION_DURATION, 10, EntityDataSerializers.INT, Function.identity(), 0);
+        this.define(HologramProperty.TRANSLATION, 11, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(0, 0, 0));
+        this.define(HologramProperty.SCALE, 12, EntityDataSerializers.VECTOR3, VECTOR3_TRANSFORMER, new Vector3f(1, 1, 1));
+        this.define(HologramProperty.ROTATION_LEFT, 13, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
+        this.define(HologramProperty.ROTATION_RIGHT, 14, EntityDataSerializers.QUATERNION, QUATERNION_TRANSFORMER, new Quaternionf(0, 0, 0, 1));
+        this.define(HologramProperty.BILLBOARD_CONSTRAINT, 15, EntityDataSerializers.BYTE, BILLBOARDCONSTRAINT_TRANSFORMER, (byte) 0);
+        this.defineMask(16, EntityDataSerializers.INT, List.of(
                 HologramProperty.BLOCK_LIGHT_OVERRIDE,
                 HologramProperty.SKY_LIGHT_OVERRIDE
         ), properties -> {
@@ -76,19 +77,19 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
                 mask |= properties.get(HologramProperty.SKY_LIGHT_OVERRIDE) << 20;
             return mask;
         }, -1);
-        this.define(HologramProperty.VIEW_RANGE, 16, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
-        this.define(HologramProperty.SHADOW_RADIUS, 17, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        this.define(HologramProperty.SHADOW_STRENGTH, 18, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
-        this.define(HologramProperty.WIDTH, 19, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        this.define(HologramProperty.HEIGHT, 20, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
-        this.define(HologramProperty.GLOW_COLOR_OVERRIDE, 21, EntityDataSerializers.INT, COLOR_TRANSFORMER, -1);
+        this.define(HologramProperty.VIEW_RANGE, 17, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
+        this.define(HologramProperty.SHADOW_RADIUS, 18, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.SHADOW_STRENGTH, 19, EntityDataSerializers.FLOAT, Function.identity(), 1.0F);
+        this.define(HologramProperty.WIDTH, 20, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.HEIGHT, 21, EntityDataSerializers.FLOAT, Function.identity(), 0.0F);
+        this.define(HologramProperty.GLOW_COLOR_OVERRIDE, 22, EntityDataSerializers.INT, COLOR_TRANSFORMER, -1);
 
         // Text Display
-        this.define(HologramProperty.TEXT, 22, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(""));
-        this.define(HologramProperty.LINE_WIDTH, 23, EntityDataSerializers.INT, Function.identity(), 200);
-        this.define(HologramProperty.BACKGROUND_COLOR, 24, EntityDataSerializers.INT, COLOR_TRANSFORMER, 0x40000000);
-        this.define(HologramProperty.TEXT_OPACITY, 25, EntityDataSerializers.BYTE, Function.identity(), (byte) -1);
-        this.defineMask(26, EntityDataSerializers.BYTE, List.of(
+        this.define(HologramProperty.TEXT, 23, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(""));
+        this.define(HologramProperty.LINE_WIDTH, 24, EntityDataSerializers.INT, Function.identity(), 200);
+        this.define(HologramProperty.BACKGROUND_COLOR, 25, EntityDataSerializers.INT, COLOR_TRANSFORMER, 0x40000000);
+        this.define(HologramProperty.TEXT_OPACITY, 26, EntityDataSerializers.BYTE, Function.identity(), (byte) -1);
+        this.defineMask(27, EntityDataSerializers.BYTE, List.of(
                 HologramProperty.HAS_SHADOW,
                 HologramProperty.SEE_THROUGH,
                 HologramProperty.USE_DEFAULT_BACKGROUND_COLOR,
@@ -104,11 +105,11 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         }, (byte) 0);
 
         // Item Display
-        this.define(HologramProperty.ITEM, 22, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, ItemStack.EMPTY);
-        this.define(HologramProperty.DISPLAY_TYPE, 23, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, (byte) 0);
+        this.define(HologramProperty.ITEM, 23, EntityDataSerializers.ITEM_STACK, CraftItemStack::asNMSCopy, ItemStack.EMPTY);
+        this.define(HologramProperty.DISPLAY_TYPE, 24, EntityDataSerializers.BYTE, ITEMDISPLAYTYPE_TRANSFORMER, (byte) 0);
 
         // Block Display
-        this.define(HologramProperty.BLOCK_DATA, 22, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, ((CraftBlockData) Material.AIR.createBlockData()).getState());
+        this.define(HologramProperty.BLOCK_DATA, 23, EntityDataSerializers.BLOCK_STATE, BLOCKDATA_TRANSFORMER, ((CraftBlockData) Material.AIR.createBlockData()).getState());
 
         // Cache masked properties
         this.propertyMappingMasks.forEach((mapping, properties) -> this.maskedProperties.addAll(properties));

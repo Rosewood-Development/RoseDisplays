@@ -1,10 +1,10 @@
-package dev.rosewood.rosedisplays.nms.v1_19_R3;
+package dev.rosewood.rosedisplays.nms.v1_20_R4;
 
 import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.VersionAvailabilityProvider;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosedisplays.nms.util.ReflectionUtils;
-import dev.rosewood.rosedisplays.nms.v1_19_R3.mapping.HologramPropertyMappings;
+import dev.rosewood.rosedisplays.nms.v1_20_R4.mapping.HologramPropertyMappings;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R4.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class NMSHandlerImpl implements NMSHandler {

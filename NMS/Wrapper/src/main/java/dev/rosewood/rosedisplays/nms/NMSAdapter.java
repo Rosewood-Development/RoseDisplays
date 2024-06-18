@@ -1,5 +1,6 @@
 package dev.rosewood.rosedisplays.nms;
 
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import org.bukkit.Bukkit;
 
 public final class NMSAdapter {
@@ -9,8 +10,19 @@ public final class NMSAdapter {
     static {
         try {
             String name = Bukkit.getServer().getClass().getPackage().getName();
-            String version = name.substring(name.lastIndexOf('.') + 1);
-            nmsHandler = (NMSHandler) Class.forName("dev.rosewood.rosedisplays.nms." + version + ".NMSHandlerImpl").getConstructor().newInstance();
+            if (name.contains("R")) { // Contains NMS package version, use that
+                name = name.substring(name.lastIndexOf('.') + 1);
+            } else { // We started not having these identifiers with Paper starting 1.20.5
+                int major = NMSUtil.getVersionNumber();
+                int minor = NMSUtil.getMinorVersionNumber();
+                if (major == 20 && (minor == 5 || minor == 6)) {
+                    name = "v1_20_R4";
+                } else if (major == 21 && minor == 0) {
+                    name = "v1_21_R1";
+                }
+            }
+
+            nmsHandler = (NMSHandler) Class.forName("dev.rosewood.rosedisplays.nms." + name + ".NMSHandlerImpl").getConstructor().newInstance();
         } catch (Exception ignored) { }
     }
 

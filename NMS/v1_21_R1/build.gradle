@@ -5,15 +5,15 @@ plugins {
 dependencies {
     compileOnly project(':NMS:Wrapper')
     compileOnly project(':Plugin')
-    compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot:1.19.4:remapped-mojang'
+    compileOnly 'org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot:1.21:remapped-mojang'
     compileOnly 'com.mojang:brigadier:1.0.18'
     compileOnly 'it.unimi.dsi:fastutil:8.1.0'
 
-    mojangToObf 'org.spigotmc:minecraft-server:1.19.4:maps-mojang@txt'
-    mojangRemapped 'org.spigotmc:spigot:1.19.4:remapped-mojang'
-    obfToRuntime 'org.spigotmc:minecraft-server:1.19.4:maps-spigot@csrg'
-    obfRemapped 'org.spigotmc:spigot:1.19.4:remapped-obf'
+    mojangToObf 'org.spigotmc:minecraft-server:1.21:maps-mojang@txt'
+    mojangRemapped 'org.spigotmc:spigot:1.21:remapped-mojang'
+    obfToRuntime 'org.spigotmc:minecraft-server:1.21:maps-spigot@csrg'
+    obfRemapped 'org.spigotmc:spigot:1.21:remapped-obf'
 }
 
 configurations {

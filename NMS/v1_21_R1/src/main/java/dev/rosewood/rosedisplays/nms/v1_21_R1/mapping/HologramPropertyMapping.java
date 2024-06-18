@@ -1,4 +1,4 @@
-package dev.rosewood.rosedisplays.nms.v1_19_R3.mapping;
+package dev.rosewood.rosedisplays.nms.v1_21_R1.mapping;
 
 import java.util.function.Function;
 import net.minecraft.network.syncher.EntityDataAccessor;

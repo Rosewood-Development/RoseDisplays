@@ -1,5 +1,12 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0' apply false
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'java'
+}
+
+jar {
+    manifest {
+        attributes("paperweight-mappings-namespace": "spigot")
+    }
 }
 
 allprojects {
@@ -7,9 +14,12 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     group = 'dev.rosewood'
     version = '1.0.0-SNAPSHOT'
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        disableAutoTargetJvm()
     }
 
     repositories {
@@ -17,10 +27,15 @@ allprojects {
 
         maven { url = 'https://libraries.minecraft.net' }
         maven { url = 'https://repo.rosewooddev.io/repository/public/' }
+        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
         maven { url = 'https://repo.aikar.co/content/groups/aikar/' }
         maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
         maven { url = 'https://repo.dmulloy2.net/nexus/repository/public/' }
         maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    }
+
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:24.0.1'
     }
 }
 
@@ -28,6 +43,8 @@ dependencies {
     implementation project(':Plugin')
     implementation project(':NMS:Wrapper')
     implementation project(path: ':NMS:v1_19_R3', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_20_R4', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_21_R1', configuration: 'remapped')
 }
 
 shadowJar {
