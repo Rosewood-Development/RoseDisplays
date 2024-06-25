@@ -1,4 +1,4 @@
-package dev.rosewood.rosedisplays.commands.argument;
+package dev.rosewood.rosedisplays.argument;
 
 import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramLine;

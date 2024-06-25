@@ -31,9 +31,13 @@ command-create-description: 'Creates a new hologram'
 command-create-already-exists: '&cA hologram with the name &b%name% &calready exists.'
 command-create-success: '&aA hologram with the name &b%name% &awas created.'
 
+# Delete Command
+command-delete-description: 'Deletes an existing hologram'
+command-delete-success: '&aThe hologram named &b%name% &awas deleted.'
+
 # Edit Command
 command-edit-description: 'Edits an existing hologram'
-command-edit-success: '&aHologram &b%name% &awas edited.'
+command-edit-success: '&aThe hologram named &b%name% &awas edited.'
 
 # Argument Handler Error Messages
 argument-handler-enum: '%enum% type [%input%] does not exist'

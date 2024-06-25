@@ -16,6 +16,11 @@ public final class HologramProperties {
         this.dirtyProperties = new HashSet<>();
     }
 
+    public HologramProperties(Map<HologramProperty<?>, Object> properties) {
+        this.properties = new HashMap<>(properties);
+        this.dirtyProperties = new HashSet<>();
+    }
+
     public <T> T get(HologramProperty<T> property) {
         return property.getType().cast(this.properties.get(property));
     }
@@ -48,9 +53,17 @@ public final class HologramProperties {
         return !this.dirtyProperties.isEmpty();
     }
 
+    public int size() {
+        return this.properties.size();
+    }
+
     public void forEach(BiConsumer<HologramProperty<?>, Object> consumer) {
         for (HologramProperty<?> property : this.properties.keySet())
             consumer.accept(property, this.properties.get(property));
+    }
+
+    public Map<HologramProperty<?>, Object> asMap() {
+        return Map.copyOf(this.properties);
     }
 
 }

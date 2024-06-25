@@ -1,6 +1,6 @@
 package dev.rosewood.rosedisplays.manager;
 
-import dev.rosewood.rosedisplays.commands.command.BaseCommand;
+import dev.rosewood.rosedisplays.command.BaseCommand;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.manager.AbstractCommandManager;

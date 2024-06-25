@@ -3,7 +3,6 @@ package dev.rosewood.rosedisplays.nms.v1_21_R1.mapping;
 import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
-import dev.rosewood.rosedisplays.hologram.property.VersionAvailabilityProvider;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
 import dev.rosewood.rosedisplays.model.ItemDisplayType;
 import dev.rosewood.rosedisplays.model.Quaternion;
@@ -31,7 +30,7 @@ import org.bukkit.craftbukkit.v1_21_R1.util.CraftChatMessage;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class HologramPropertyMappings implements VersionAvailabilityProvider {
+public class HologramPropertyMappings {
 
     private static final HologramPropertyMappings INSTANCE = new HologramPropertyMappings();
     public static HologramPropertyMappings getInstance() {
@@ -96,9 +95,9 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
                 HologramProperty.ALIGNMENT
         ), properties -> {
             byte mask = 0;
-            if (properties.get(HologramProperty.HAS_SHADOW)) mask |= 0x01;
-            if (properties.get(HologramProperty.SEE_THROUGH)) mask |= 0x02;
-            if (properties.get(HologramProperty.USE_DEFAULT_BACKGROUND_COLOR)) mask |= 0x04;
+            if (properties.has(HologramProperty.HAS_SHADOW) && properties.get(HologramProperty.HAS_SHADOW)) mask |= 0x01;
+            if (properties.has(HologramProperty.SEE_THROUGH) && properties.get(HologramProperty.SEE_THROUGH)) mask |= 0x02;
+            if (properties.has(HologramProperty.USE_DEFAULT_BACKGROUND_COLOR) && properties.get(HologramProperty.USE_DEFAULT_BACKGROUND_COLOR)) mask |= 0x04;
             if (properties.has(HologramProperty.ALIGNMENT))
                 mask |= properties.get(HologramProperty.ALIGNMENT).ordinal() << 3;
             return mask;
@@ -133,10 +132,7 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         if (mapping == null)
             throw new IllegalArgumentException("Unknown property " + property.getName() + "!");
 
-        if (value == null)
-            value = mapping.defaultValue();
-
-        if (mapping.inputPropertyType() != value.getClass())
+        if (value != null && mapping.inputPropertyType() != value.getClass())
             throw new IllegalArgumentException("Value type " + value.getClass().getName() + " does not match property type " + mapping.inputPropertyType() + "!");
 
         return ((HologramPropertyMapping<T, ?>) mapping).createDataValue((T) value);
@@ -181,9 +177,8 @@ public class HologramPropertyMappings implements VersionAvailabilityProvider {
         return dataValues;
     }
 
-    @Override
     public boolean isAvailable(HologramProperty<?> property) {
-        return this.propertyMappings.containsKey(property);
+        return this.propertyMappings.containsKey(property) || this.maskedProperties.contains(property);
     }
 
 }

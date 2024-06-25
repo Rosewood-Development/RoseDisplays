@@ -1,11 +1,10 @@
-package dev.rosewood.rosedisplays.commands.command;
+package dev.rosewood.rosedisplays.command;
 
-import dev.rosewood.rosedisplays.commands.argument.DisplaysArgumentHandlers;
+import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
 import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
@@ -30,6 +29,8 @@ public class EditCommand extends BaseRoseCommand {
                 .permission("rosedisplays.hologram")
                 .playerOnly()
                 .arguments(ArgumentsDefinition.builder()
+                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                        .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
                         .optionalSub(
                                 new SetCommand(this.rosePlugin),
                                 new UnsetCommand(this.rosePlugin)
@@ -44,18 +45,16 @@ public class EditCommand extends BaseRoseCommand {
         }
 
         @RoseExecutable
-        public void execute(CommandContext context, Hologram hologram, HologramLine line, HologramProperty<?> property, String value) {
-
+        public <T> void execute(CommandContext context, Hologram hologram, HologramLine line, HologramProperty<T> property, T value) {
+            line.getProperties().set(property, value);
         }
 
         @Override
         protected CommandInfo createCommandInfo() {
             return CommandInfo.builder("set")
                     .arguments(ArgumentsDefinition.builder()
-                            .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
-                            .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
                             .required("property", DisplaysArgumentHandlers.HOLOGRAM_PROPERTY)
-                            .required("value", ArgumentHandlers.STRING)
+                            .required("value", DisplaysArgumentHandlers.HOLOGRAM_PROPERTY_VALUE)
                             .build())
                     .build();
         }
@@ -77,8 +76,6 @@ public class EditCommand extends BaseRoseCommand {
         protected CommandInfo createCommandInfo() {
             return CommandInfo.builder("unset")
                     .arguments(ArgumentsDefinition.builder()
-                            .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
-                            .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
                             .required("property", DisplaysArgumentHandlers.HOLOGRAM_PROPERTY)
                             .build())
                     .build();

@@ -10,7 +10,7 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
     public enum Setting implements RoseSetting {
 
-        ;
+        HOLOGRAM_UPDATE_FREQUENCY("hologram-update-frequency", 2, "The number of ticks between hologram updates", "Min value of 1");
 
         private final String key;
         private final Object defaultValue;

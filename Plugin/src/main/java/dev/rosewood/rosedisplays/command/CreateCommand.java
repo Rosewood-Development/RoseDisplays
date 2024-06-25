@@ -1,4 +1,4 @@
-package dev.rosewood.rosedisplays.commands.command;
+package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramLine;
@@ -37,7 +37,7 @@ public class CreateCommand extends BaseRoseCommand {
         }
 
         Hologram hologram = hologramManager.createHologram(name, player.getLocation().add(0, 1, 0));
-        HologramLine line = new HologramLine(HologramLineType.TEXT, hologram.getLocation());
+        HologramLine line = new HologramLine(HologramLineType.TEXT);
         line.getProperties().set(HologramProperty.TEXT, text);
         line.getProperties().set(HologramProperty.BILLBOARD_CONSTRAINT, BillboardConstraint.CENTER);
         hologram.addLine(line);
