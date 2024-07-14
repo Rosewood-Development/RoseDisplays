@@ -8,6 +8,7 @@ import dev.rosewood.rosedisplays.model.Quaternion;
 import dev.rosewood.rosedisplays.model.Vector3;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
+import java.time.Duration;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,6 +22,7 @@ public final class DisplaysArgumentHandlers {
     public static final ArgumentHandler<Vector3> VECTOR3 = new Vector3ArgumentHandler();
     public static final ArgumentHandler<ItemStack> ITEMSTACK = new ItemStackArgumentHandler();
     public static final ArgumentHandler<BlockData> BLOCK_DATA = new BlockDataArgumentHandler();
+    public static final ArgumentHandler<Duration> DURATION = new DurationArgumentHandler();
 
     public static final ArgumentHandler<Object> HOLOGRAM_PROPERTY_VALUE = new HologramPropertyValueArgumentHandler();
 

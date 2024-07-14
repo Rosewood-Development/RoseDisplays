@@ -19,6 +19,7 @@ public class BaseCommand extends PrimaryCommand {
                 .aliases("rd", "displays", "holo", "hologram")
                 .arguments(ArgumentsDefinition.builder()
                         .optionalSub(
+                                new AttachCommand(this.rosePlugin),
                                 new CreateCommand(this.rosePlugin),
                                 new DeleteCommand(this.rosePlugin),
                                 new EditCommand(this.rosePlugin),

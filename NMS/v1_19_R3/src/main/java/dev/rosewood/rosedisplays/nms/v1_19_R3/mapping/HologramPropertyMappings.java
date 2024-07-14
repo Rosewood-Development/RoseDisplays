@@ -1,6 +1,7 @@
 package dev.rosewood.rosedisplays.nms.v1_19_R3.mapping;
 
 import dev.rosewood.rosedisplays.hologram.HologramLine;
+import dev.rosewood.rosedisplays.hologram.HologramLineType;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
@@ -120,6 +121,9 @@ public class HologramPropertyMappings {
     }
 
     private <T> void defineMask(int accessorId, EntityDataSerializer<T> entityDataSerializer, List<HologramProperty<?>> properties, Function<HologramProperties, T> transformer, T defaultValue) {
+        if (properties.stream().anyMatch(x -> !x.isMapped()))
+            throw new IllegalArgumentException("Cannot create a mask for unmapped properties");
+
         EntityDataAccessor<T> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
         HologramPropertyMapping<HologramProperties, T> mapping = new HologramPropertyMapping<>(HologramProperties.class, entityDataAccessor, transformer, defaultValue);
         this.propertyMappingMasks.put(mapping, properties);
@@ -131,7 +135,7 @@ public class HologramPropertyMappings {
         if (mapping == null)
             throw new IllegalArgumentException("Unknown property " + property.getName() + "!");
 
-        if (value != null && mapping.inputPropertyType() != value.getClass())
+        if (value != null && !mapping.inputPropertyType().isAssignableFrom(value.getClass()))
             throw new IllegalArgumentException("Value type " + value.getClass().getName() + " does not match property type " + mapping.inputPropertyType() + "!");
 
         return ((HologramPropertyMapping<T, ?>) mapping).createDataValue((T) value);
@@ -143,14 +147,14 @@ public class HologramPropertyMappings {
     }
 
     public List<SynchedEntityData.DataValue<?>> createFreshDataValues(HologramLine hologramLine) {
-        return this.createDataValues(hologramLine.getProperties(), true);
+        return this.createDataValues(hologramLine.getType(), hologramLine.getProperties(), true);
     }
 
     public List<SynchedEntityData.DataValue<?>> createDataValues(HologramLine hologramLine) {
-        return this.createDataValues(hologramLine.getProperties(), false);
+        return this.createDataValues(hologramLine.getType(), hologramLine.getProperties(), false);
     }
 
-    private List<SynchedEntityData.DataValue<?>> createDataValues(HologramProperties properties, boolean fresh) {
+    private List<SynchedEntityData.DataValue<?>> createDataValues(HologramLineType lineType, HologramProperties properties, boolean fresh) {
         List<SynchedEntityData.DataValue<?>> dataValues = new ArrayList<>();
 
         HologramProperties actingProperties;
@@ -162,14 +166,14 @@ public class HologramPropertyMappings {
 
         // Create data values for normal properties
         actingProperties.forEach((property, value) -> {
-            if (!this.maskedProperties.contains(property))
+            if (property.isMapped() && property.isApplicable(lineType) && !this.maskedProperties.contains(property))
                 dataValues.add(this.createDataValue(property, value));
         });
 
         // Create data values for masked properties
         this.propertyMappingMasks.forEach((mapping, maskProperties) -> {
             // Use all properties to create the mask, unmodified values still need to be present to build the full mask
-            if (maskProperties.stream().anyMatch(actingProperties::has))
+            if (maskProperties.stream().allMatch(x -> x.isApplicable(lineType)) && maskProperties.stream().anyMatch(actingProperties::has))
                 dataValues.add(this.createMaskDataValue(mapping, properties));
         });
 
@@ -177,7 +181,7 @@ public class HologramPropertyMappings {
     }
 
     public boolean isAvailable(HologramProperty<?> property) {
-        return this.propertyMappings.containsKey(property);
+        return this.propertyMappings.containsKey(property) || this.maskedProperties.contains(property);
     }
 
 }

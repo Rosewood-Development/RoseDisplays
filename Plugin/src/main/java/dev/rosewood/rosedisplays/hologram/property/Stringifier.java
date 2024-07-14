@@ -33,9 +33,22 @@ public abstract class Stringifier<T> {
 
     @SuppressWarnings("unchecked")
     public static <T> Stringifier<T> get(Class<T> type) {
+        // Try to find an exact match first
         Stringifier<T> stringifier = (Stringifier<T>) REGISTRY.get(type);
+        if (stringifier == null) {
+            // No match? Try to find a stringifier the type is an instance of
+            for (Class<?> stringifierType : REGISTRY.keySet()) {
+                if (stringifierType.isAssignableFrom(type)) {
+                    stringifier = (Stringifier<T>) REGISTRY.get(stringifierType);
+                    REGISTRY.put(type, stringifier); // Cache for faster lookup
+                    break;
+                }
+            }
+        }
+
         if (stringifier == null)
-            throw new IllegalArgumentException("No stringifier found for " + type.getName());
+            throw new IllegalArgumentException("No Stringifier found for type " + type.getName());
+
         return stringifier;
     }
 

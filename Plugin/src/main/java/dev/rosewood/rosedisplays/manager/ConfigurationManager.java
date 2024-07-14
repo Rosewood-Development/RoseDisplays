@@ -10,7 +10,10 @@ public class ConfigurationManager extends AbstractConfigurationManager {
 
     public enum Setting implements RoseSetting {
 
-        HOLOGRAM_UPDATE_FREQUENCY("hologram-update-frequency", 2, "The number of ticks between hologram updates", "Min value of 1");
+        HOLOGRAM_UPDATE_FREQUENCY("hologram-update-frequency", 2, "The number of ticks between hologram updates", "Min value of 1"),
+        DEFAULT_PROPERTY_VALUES("default-property-values", null, "The default values for hologram line properties"),
+        DEFAULT_PROPERTY_VALUE_TEXT_UPDATE_INTERVAL("default-property-values.text_update_interval", "200ms", "The amount of time between text updates", "Useful for animations, disable with -1"),
+        DEFAULT_PROPERTY_VALUE_PLACEHOLDER_UPDATE_INTERVAL("default-property-values.placeholder_update_interval", "500ms", "The amount of time between placeholder updates", "Useful for animated colors, disable with -1");
 
         private final String key;
         private final Object defaultValue;

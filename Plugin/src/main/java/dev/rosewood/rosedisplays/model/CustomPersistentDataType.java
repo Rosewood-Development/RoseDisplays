@@ -148,7 +148,7 @@ public final class CustomPersistentDataType {
                                     String value = dataInput.readUTF();
                                     HologramProperty<?> property = HologramProperty.valueOf(propertyName);
                                     if (property == null) {
-                                        RoseDisplays.getInstance().getLogger().warning("Unknown HologramProperty at: " + propertyName);
+                                        RoseDisplays.getInstance().getLogger().warning("Unknown HologramProperty: " + propertyName);
                                         continue;
                                     }
                                     properties.put(property, Stringifier.unstringify(property.getType(), value));

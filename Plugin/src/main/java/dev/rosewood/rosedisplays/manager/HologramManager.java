@@ -46,8 +46,8 @@ public class HologramManager extends Manager implements Listener {
         this.chunkTickets = new ConcurrentHashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, rosePlugin);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(rosePlugin, this::tick, 0L, ConfigurationManager.Setting.HOLOGRAM_UPDATE_FREQUENCY.getLong());
-        Bukkit.getScheduler().runTaskTimer(rosePlugin, this::checkChunkTickets, 0L, 20L);
+        this.rosePlugin.getScheduler().runTaskTimerAsync(this::tick, 0L, ConfigurationManager.Setting.HOLOGRAM_UPDATE_FREQUENCY.getLong());
+        this.rosePlugin.getScheduler().runTaskTimer(this::checkChunkTickets, 0L, 20L);
     }
 
     @Override
@@ -217,6 +217,9 @@ public class HologramManager extends Manager implements Listener {
     public void unloadHolograms(Chunk chunk) {
         ChunkLocation chunkLocation = ChunkLocation.of(chunk);
         Collection<Hologram> holograms = this.loadedHolograms.removeAll(chunkLocation);
+        if (holograms.isEmpty())
+            return;
+
         holograms.forEach(hologram -> {
             this.unloadedHolograms.put(chunkLocation, hologram.asUnloaded());
             hologram.removeAllWatchers();

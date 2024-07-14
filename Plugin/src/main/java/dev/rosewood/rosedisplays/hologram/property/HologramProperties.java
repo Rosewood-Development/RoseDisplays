@@ -40,11 +40,8 @@ public final class HologramProperties {
     }
 
     public HologramProperties getDirty() {
-        HologramProperties copy = new HologramProperties();
-        for (HologramProperty<?> property : this.dirtyProperties) {
-            copy.properties.put(property, this.properties.get(property));
-            copy.dirtyProperties.add(property);
-        }
+        HologramProperties copy = this.copy();
+        copy.dirtyProperties.addAll(this.dirtyProperties);
         this.dirtyProperties.clear();
         return copy;
     }
@@ -58,12 +55,19 @@ public final class HologramProperties {
     }
 
     public void forEach(BiConsumer<HologramProperty<?>, Object> consumer) {
-        for (HologramProperty<?> property : this.properties.keySet())
+        Set<HologramProperty<?>> combinedProperties = new HashSet<>(this.properties.keySet());
+        combinedProperties.addAll(this.dirtyProperties);
+
+        for (HologramProperty<?> property : combinedProperties)
             consumer.accept(property, this.properties.get(property));
     }
 
     public Map<HologramProperty<?>, Object> asMap() {
         return Map.copyOf(this.properties);
+    }
+
+    public HologramProperties copy() {
+        return new HologramProperties(this.properties);
     }
 
 }

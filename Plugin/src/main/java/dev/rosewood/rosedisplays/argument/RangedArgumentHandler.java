@@ -40,16 +40,19 @@ public class RangedArgumentHandler<T extends Number> extends ArgumentHandler<T> 
             outputValue = output.intValue();
         }
         if (outputValue < this.min || outputValue > this.max)
-            throw new HandledArgumentException("argument-handler-range", StringPlaceholders.of("input", outputValue, "min", this.min, "max", this.max));
+            throw new HandledArgumentException("argument-handler-range", StringPlaceholders.builder()
+                    .add("input", outputValue)
+                    .add("min", (this.decimals ? String.valueOf(this.min) : String.valueOf((int) this.min)))
+                    .add("max", (this.decimals ? String.valueOf(this.max) : String.valueOf((int) this.max))).build());
         return output;
     }
 
     @Override
     public List<String> suggest(CommandContext context, Argument argument, String[] args) {
-        String builder = (argument.optional() ? "[" : "<") +
-                this.min + " to " + this.max +
+        String rangeString = (argument.optional() ? "[" : "<") +
+                (this.decimals ? this.min : (int) this.min) + " to " + (this.decimals ? this.max : (int) this.max) +
                 (argument.optional() ? "]" : ">");
-        return List.of(builder);
+        return List.of(rangeString);
     }
 
 }

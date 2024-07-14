@@ -1,6 +1,6 @@
 package dev.rosewood.rosedisplays.hologram;
 
-import dev.rosewood.rosedisplays.hologram.renderer.BasicHologramRenderer;
+import dev.rosewood.rosedisplays.hologram.renderer.SingleHologramRenderer;
 import dev.rosewood.rosedisplays.hologram.renderer.HologramRenderer;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Hologram extends UnloadedHologram {
     public Hologram(String name, Location location) {
         super(name, ChunkLocation.of(location));
         this.location = location;
-        this.renderer = new BasicHologramRenderer(this);
+        this.renderer = new SingleHologramRenderer(this);
         this.lines = new ArrayList<>();
     }
 

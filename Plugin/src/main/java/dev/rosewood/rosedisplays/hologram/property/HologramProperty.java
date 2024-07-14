@@ -14,6 +14,8 @@ import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import java.awt.Color;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -29,47 +31,50 @@ public final class HologramProperty<T> {
     private static final Multimap<HologramLineType, HologramProperty<?>> AVAILABLE_PROPERTIES_BY_TYPE = MultimapBuilder.enumKeys(HologramLineType.class).arrayListValues().build();
 
     // All
-    public static final HologramProperty<Boolean> GLOWING = new HologramProperty<>("glowing", ArgumentHandlers.BOOLEAN);
-    public static final HologramProperty<Integer> INTERPOLATION_DELAY = new HologramProperty<>("interpolation_delay", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE));
-    public static final HologramProperty<Integer> INTERPOLATION_DURATION = new HologramProperty<>("interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE));
-    public static final HologramProperty<Integer> TRANSFORMATION_INTERPOLATION_DURATION = new HologramProperty<>("transformation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE));
-    public static final HologramProperty<Integer> POSITION_ROTATION_INTERPOLATION_DURATION = new HologramProperty<>("position_rotation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE));
-    public static final HologramProperty<Vector3> TRANSLATION = new HologramProperty<>("translation", DisplaysArgumentHandlers.VECTOR3);
-    public static final HologramProperty<Vector3> SCALE = new HologramProperty<>("scale", DisplaysArgumentHandlers.VECTOR3);
-    public static final HologramProperty<Quaternion> ROTATION_LEFT = new HologramProperty<>("rotation_left", DisplaysArgumentHandlers.QUATERNION);
-    public static final HologramProperty<Quaternion> ROTATION_RIGHT = new HologramProperty<>("rotation_right", DisplaysArgumentHandlers.QUATERNION);
-    public static final HologramProperty<BillboardConstraint> BILLBOARD_CONSTRAINT = new HologramProperty<>("billboard_constraint", ArgumentHandlers.forEnum(BillboardConstraint.class));
-    public static final HologramProperty<Integer> BLOCK_LIGHT_OVERRIDE = new HologramProperty<>("block_light_override", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 15));
-    public static final HologramProperty<Integer> SKY_LIGHT_OVERRIDE = new HologramProperty<>("sky_light_override", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 15));
-    public static final HologramProperty<Float> VIEW_RANGE = new HologramProperty<>("view_range", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE));
-    public static final HologramProperty<Float> SHADOW_RADIUS = new HologramProperty<>("shadow_radius", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE));
-    public static final HologramProperty<Float> SHADOW_STRENGTH = new HologramProperty<>("shadow_strength", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE));
-    public static final HologramProperty<Float> WIDTH = new HologramProperty<>("width", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE));
-    public static final HologramProperty<Float> HEIGHT = new HologramProperty<>("height", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE));
-    public static final HologramProperty<Color> GLOW_COLOR_OVERRIDE = new HologramProperty<>("glow_color_override", ArgumentHandlers.JAVA_COLOR);
+    public static final HologramProperty<Boolean> GLOWING = create("glowing", ArgumentHandlers.BOOLEAN).mappedProperty().build();
+    public static final HologramProperty<Integer> INTERPOLATION_DELAY = create("interpolation_delay", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Integer> INTERPOLATION_DURATION = create("interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Integer> TRANSFORMATION_INTERPOLATION_DURATION = create("transformation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Integer> POSITION_ROTATION_INTERPOLATION_DURATION = create("position_rotation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Vector3> TRANSLATION = create("translation", DisplaysArgumentHandlers.VECTOR3).mappedProperty().build();
+    public static final HologramProperty<Vector3> SCALE = create("scale", DisplaysArgumentHandlers.VECTOR3).mappedProperty().build();
+    public static final HologramProperty<Quaternion> ROTATION_LEFT = create("rotation_left", DisplaysArgumentHandlers.QUATERNION).mappedProperty().build();
+    public static final HologramProperty<Quaternion> ROTATION_RIGHT = create("rotation_right", DisplaysArgumentHandlers.QUATERNION).mappedProperty().build();
+    public static final HologramProperty<BillboardConstraint> BILLBOARD_CONSTRAINT = create("billboard_constraint", ArgumentHandlers.forEnum(BillboardConstraint.class)).mappedProperty().build();
+    public static final HologramProperty<Integer> BLOCK_LIGHT_OVERRIDE = create("block_light_override", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 15)).mappedProperty().build();
+    public static final HologramProperty<Integer> SKY_LIGHT_OVERRIDE = create("sky_light_override", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 15)).mappedProperty().build();
+    public static final HologramProperty<Float> VIEW_RANGE = create("view_range", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Float> SHADOW_RADIUS = create("shadow_radius", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Float> SHADOW_STRENGTH = create("shadow_strength", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Float> WIDTH = create("width", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.MAX_VALUE)).mappedProperty().build();
+    public static final HologramProperty<Float> HEIGHT = create("height", DisplaysArgumentHandlers.forDoubleRange(ArgumentHandlers.FLOAT, 0, Float.POSITIVE_INFINITY)).mappedProperty().build();
+    public static final HologramProperty<Color> GLOW_COLOR_OVERRIDE = create("glow_color_override", ArgumentHandlers.JAVA_COLOR).mappedProperty().build();
 
     // Text Display
-    public static final HologramProperty<String> TEXT = new HologramProperty<>("text", ArgumentHandlers.GREEDY_STRING, HologramLineType.TEXT);
-    public static final HologramProperty<Integer> LINE_WIDTH = new HologramProperty<>("line_width", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE), HologramLineType.TEXT);
-    public static final HologramProperty<Color> BACKGROUND_COLOR = new HologramProperty<>("background_color", ArgumentHandlers.JAVA_COLOR, HologramLineType.TEXT);
-    public static final HologramProperty<Byte> TEXT_OPACITY = new HologramProperty<>("text_opacity", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.BYTE, -1, Byte.MAX_VALUE), HologramLineType.TEXT);
-    public static final HologramProperty<Boolean> HAS_SHADOW = new HologramProperty<>("has_shadow", ArgumentHandlers.BOOLEAN, HologramLineType.TEXT);
-    public static final HologramProperty<Boolean> SEE_THROUGH = new HologramProperty<>("see_through", ArgumentHandlers.BOOLEAN, HologramLineType.TEXT);
-    public static final HologramProperty<Boolean> USE_DEFAULT_BACKGROUND_COLOR = new HologramProperty<>("use_default_background_color", ArgumentHandlers.BOOLEAN, HologramLineType.TEXT);
-    public static final HologramProperty<TextDisplayAlignment> ALIGNMENT = new HologramProperty<>("alignment", ArgumentHandlers.forEnum(TextDisplayAlignment.class), HologramLineType.TEXT);
+    public static final HologramProperty<String> TEXT = create("text", ArgumentHandlers.GREEDY_STRING).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Integer> LINE_WIDTH = create("line_width", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE)).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Color> BACKGROUND_COLOR = create("background_color", ArgumentHandlers.JAVA_COLOR).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Byte> TEXT_OPACITY = create("text_opacity", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.BYTE, -1, Byte.MAX_VALUE)).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Boolean> HAS_SHADOW = create("has_shadow", ArgumentHandlers.BOOLEAN).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Boolean> SEE_THROUGH = create("see_through", ArgumentHandlers.BOOLEAN).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<Boolean> USE_DEFAULT_BACKGROUND_COLOR = create("use_default_background_color", ArgumentHandlers.BOOLEAN).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    public static final HologramProperty<TextDisplayAlignment> ALIGNMENT = create("alignment", ArgumentHandlers.forEnum(TextDisplayAlignment.class)).lineTypes(HologramLineType.TEXT).mappedProperty().build();
+    // Custom Text Display
+    public static final HologramProperty<Duration> TEXT_UPDATE_INTERVAL = create("text_update_interval", DisplaysArgumentHandlers.DURATION).lineTypes(HologramLineType.TEXT).build();
+    public static final HologramProperty<Duration> PLACEHOLDER_UPDATE_INTERVAL = create("placeholder_update_interval", DisplaysArgumentHandlers.DURATION).lineTypes(HologramLineType.TEXT).build();
 
     // Item Display
-    public static final HologramProperty<ItemStack> ITEM = new HologramProperty<>("item", DisplaysArgumentHandlers.ITEMSTACK, HologramLineType.ITEM);
-    public static final HologramProperty<ItemDisplayType> DISPLAY_TYPE = new HologramProperty<>("display_type", ArgumentHandlers.forEnum(ItemDisplayType.class), HologramLineType.ITEM);
+    public static final HologramProperty<ItemStack> ITEM = create("item", DisplaysArgumentHandlers.ITEMSTACK).lineTypes(HologramLineType.ITEM).mappedProperty().build();
+    public static final HologramProperty<ItemDisplayType> DISPLAY_TYPE = create("display_type", ArgumentHandlers.forEnum(ItemDisplayType.class)).lineTypes(HologramLineType.ITEM).mappedProperty().build();
 
     // Block Display
-    public static final HologramProperty<BlockData> BLOCK_DATA = new HologramProperty<>("block_data", DisplaysArgumentHandlers.BLOCK_DATA, HologramLineType.BLOCK);
+    public static final HologramProperty<BlockData> BLOCK_DATA = create("block_data", DisplaysArgumentHandlers.BLOCK_DATA).lineTypes(HologramLineType.BLOCK).mappedProperty().build();
 
     static {
         // This has to be down here instead of in the HologramProperty constructor since it can cause a circular dependency
         NMSHandler nmsHandler = NMSAdapter.getHandler();
         KNOWN_PROPERTIES.forEach(property -> {
-            if (nmsHandler.isPropertyAvailable(property)) {
+            if (!property.isMapped() || nmsHandler.isPropertyAvailable(property)) {
                 AVAILABLE_PROPERTIES.add(property);
                 property.getLineTypes().forEach(lineType -> AVAILABLE_PROPERTIES_BY_TYPE.put(lineType, property));
             }
@@ -79,16 +84,15 @@ public final class HologramProperty<T> {
     private final String name;
     private final ArgumentHandler<T> argumentHandler;
     private final Set<HologramLineType> lineTypes;
+    private final boolean mappedProperty;
 
-    private HologramProperty(String name, ArgumentHandler<T> argumentHandler, HologramLineType lineType) {
+    private HologramProperty(String name, ArgumentHandler<T> argumentHandler, Set<HologramLineType> lineTypes, boolean mappedProperty) {
         this.name = name;
         this.argumentHandler = argumentHandler;
-        this.lineTypes = lineType == null ? EnumSet.allOf(HologramLineType.class) : EnumSet.of(lineType);
-        KNOWN_PROPERTIES.add(this);
-    }
-
-    private HologramProperty(String name, ArgumentHandler<T> argumentHandler) {
-        this(name, argumentHandler, null);
+        this.lineTypes = lineTypes;
+        this.mappedProperty = mappedProperty;
+        if (!KNOWN_PROPERTIES.add(this))
+            throw new IllegalArgumentException("Duplicate HologramProperty: " + this.name);
     }
 
     public String getName() {
@@ -115,6 +119,13 @@ public final class HologramProperty<T> {
         return AVAILABLE_PROPERTIES.contains(this);
     }
 
+    /**
+     * @return true if this property is mapped to an NMS property, false otherwise
+     */
+    public boolean isMapped() {
+        return this.mappedProperty;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -132,7 +143,10 @@ public final class HologramProperty<T> {
     public String toString() {
         return "HologramProperty[" +
                 "name=" + this.name + ", " +
-                "type=" + this.argumentHandler + ']';
+                "type=" + this.argumentHandler + ", " +
+                "lineTypes=" + this.lineTypes + ", " +
+                "mappedProperty=" + this.mappedProperty +
+                "]";
     }
 
     public static Collection<HologramProperty<?>> values() {
@@ -144,10 +158,53 @@ public final class HologramProperty<T> {
     }
 
     public static HologramProperty<?> valueOf(String name) {
-        return Set.copyOf(AVAILABLE_PROPERTIES).stream()
-                .filter(property -> property.getName().equals(name))
+        return AVAILABLE_PROPERTIES.stream()
+                .filter(x -> x.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private static <T> Builder<T> create(String name, ArgumentHandler<T> argumentHandler) {
+        return new Builder<>(name, argumentHandler);
+    }
+
+    private static class Builder<T> {
+
+        private final String name;
+        private final ArgumentHandler<T> argumentHandler;
+        private Set<HologramLineType> lineTypes;
+        private boolean mappedProperty;
+
+        public Builder(String name, ArgumentHandler<T> argumentHandler) {
+            this.name = name;
+            this.argumentHandler = argumentHandler;
+            this.lineTypes = EnumSet.allOf(HologramLineType.class);
+            this.mappedProperty = false;
+        }
+
+        public Builder<T> lineTypes(HologramLineType... lineTypes) {
+            if (lineTypes == null || lineTypes.length == 0) {
+                this.lineTypes = EnumSet.allOf(HologramLineType.class);
+            } else {
+                this.lineTypes = EnumSet.copyOf(Arrays.asList(lineTypes));
+            }
+            return this;
+        }
+
+        public Builder<T> mappedProperty() {
+            this.mappedProperty = true;
+            return this;
+        }
+
+        public HologramProperty<T> build() {
+            return new HologramProperty<>(
+                    this.name,
+                    this.argumentHandler,
+                    this.lineTypes,
+                    this.mappedProperty
+            );
+        }
+
     }
 
 }

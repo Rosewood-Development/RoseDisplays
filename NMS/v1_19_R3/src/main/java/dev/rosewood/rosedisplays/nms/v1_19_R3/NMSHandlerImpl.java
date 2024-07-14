@@ -38,6 +38,7 @@ public class NMSHandlerImpl implements NMSHandler {
             case TEXT -> EntityType.TEXT_DISPLAY;
             case ITEM -> EntityType.ITEM_DISPLAY;
             case BLOCK -> EntityType.BLOCK_DISPLAY;
+            default -> throw new IllegalArgumentException("Unsupported hologram line type: " + hologramLine.getType());
         };
 
         ClientboundAddEntityPacket packet = new ClientboundAddEntityPacket(

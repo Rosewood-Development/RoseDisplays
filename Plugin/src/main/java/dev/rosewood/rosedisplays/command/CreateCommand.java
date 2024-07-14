@@ -15,7 +15,9 @@ import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class CreateCommand extends BaseRoseCommand {
 
@@ -24,10 +26,8 @@ public class CreateCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, String name, String text) {
+    public void execute(CommandContext context, String name, HologramLineType lineType) {
         Player player = (Player) context.getSender();
-        if (text == null)
-            text = "New Hologram [" + name + "]";
 
         LocaleManager localeManager = this.rosePlugin.getManager(LocaleManager.class);
         HologramManager hologramManager = this.rosePlugin.getManager(HologramManager.class);
@@ -37,8 +37,19 @@ public class CreateCommand extends BaseRoseCommand {
         }
 
         Hologram hologram = hologramManager.createHologram(name, player.getLocation().add(0, 1, 0));
-        HologramLine line = new HologramLine(HologramLineType.TEXT);
-        line.getProperties().set(HologramProperty.TEXT, text);
+        HologramLine line = new HologramLine(lineType);
+        switch (lineType) {
+            case TEXT -> {
+                line.getProperties().set(HologramProperty.TEXT, "New Hologram [" + name + "]");
+            }
+            case ITEM -> {
+                line.getProperties().set(HologramProperty.ITEM, new ItemStack(Material.DIAMOND));
+            }
+            case BLOCK -> {
+                line.getProperties().set(HologramProperty.BLOCK_DATA, Material.GRASS_BLOCK.createBlockData());
+            }
+        }
+
         line.getProperties().set(HologramProperty.BILLBOARD_CONSTRAINT, BillboardConstraint.CENTER);
         hologram.addLine(line);
 
@@ -53,7 +64,7 @@ public class CreateCommand extends BaseRoseCommand {
                 .playerOnly()
                 .arguments(ArgumentsDefinition.builder()
                         .required("name", ArgumentHandlers.STRING)
-                        .optional("text", ArgumentHandlers.GREEDY_STRING)
+                        .required("type", ArgumentHandlers.forEnum(HologramLineType.class))
                         .build())
                 .build();
     }

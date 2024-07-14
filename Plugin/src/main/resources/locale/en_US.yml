@@ -26,6 +26,10 @@ command-help-list-description-no-args: '&8 - &d/%cmd% %subcmd% &7- %desc%'
 command-reload-description: 'Reloads the plugin'
 command-reload-reloaded: '&eConfiguration and locale files were reloaded.'
 
+# Attach Command
+command-attach-description: 'Attaches a hologram to a player'
+command-attach-success: '&aThe hologram named &b%name% &awas attached to &b%player% &a.'
+
 # Create Command
 command-create-description: 'Creates a new hologram'
 command-create-already-exists: '&cA hologram with the name &b%name% &calready exists.'
@@ -48,3 +52,6 @@ argument-handler-player: 'No Player with the username [%input%] was found online
 argument-handler-hologram: 'No Hologram with the name [%input%] was found'
 argument-handler-hologram-line: 'No line with the index [%input%] was found'
 argument-handler-hologram-line-numeric: 'Line value [%input%] must be a positive whole number'
+argument-handler-vector3: 'Vector3 value [%input%] must be 3 numbers'
+argument-handler-quaternion: 'Quaternion value [%input%] must be 4 numbers'
+argument-handler-duration: 'Duration value [%input%] must be formatted like [#(ms|s|m|h|d)] ex. 500ms or 1s500ms'
