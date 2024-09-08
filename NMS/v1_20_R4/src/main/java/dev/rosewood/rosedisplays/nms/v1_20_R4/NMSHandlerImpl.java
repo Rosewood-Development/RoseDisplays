@@ -32,7 +32,7 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramSpawnPacket(Object hologramLineArg, Location location, Collection<Player> players) {
+    public void sendEntitySpawnPacket(Object hologramLineArg, Location location, Collection<Player> players) {
         HologramLine hologramLine = (HologramLine) hologramLineArg;
         EntityType<?> entityType = switch (hologramLine.getType()) {
             case TEXT -> EntityType.TEXT_DISPLAY;
@@ -65,7 +65,7 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramMetadataPacket(Object hologramLineArg, Collection<Player> players) {
+    public void sendEntityMetadataPacket(Object hologramLineArg, Collection<Player> players) {
         HologramLine hologramLine = (HologramLine) hologramLineArg;
         List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createDataValues(hologramLine);
         ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
@@ -74,7 +74,7 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramDespawnPacket(Object hologramLineArg, Collection<Player> players) {
+    public void sendEntityDespawnPacket(Object hologramLineArg, Collection<Player> players) {
         HologramLine hologramLine = (HologramLine) hologramLineArg;
         ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologramLine.getEntityId());
         for (Player player : players)

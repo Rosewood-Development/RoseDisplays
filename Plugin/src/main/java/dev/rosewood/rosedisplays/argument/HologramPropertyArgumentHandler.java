@@ -1,7 +1,6 @@
 package dev.rosewood.rosedisplays.argument;
 
 import dev.rosewood.rosedisplays.hologram.Hologram;
-import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosegarden.command.framework.Argument;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
@@ -25,11 +24,7 @@ public class HologramPropertyArgumentHandler extends ArgumentHandler<HologramPro
         if (hologram == null)
             throw new IllegalStateException("HologramProperty argument handler called without a valid Hologram");
 
-        HologramLine line = context.get(HologramLine.class);
-        if (line == null)
-            throw new IllegalStateException("HologramProperty argument handler called without a valid HologramLine");
-
-        return HologramProperty.values(line.getType()).stream()
+        return hologram.getProperties().getTag().stream()
                 .filter(x -> x.getName().equalsIgnoreCase(input))
                 .findFirst()
                 .orElseThrow(() -> new HandledArgumentException("argument-handler-hologram-property", StringPlaceholders.of("input", input)));
@@ -37,11 +32,13 @@ public class HologramPropertyArgumentHandler extends ArgumentHandler<HologramPro
 
     @Override
     public List<String> suggest(CommandContext context, Argument argument, String[] args) {
-        HologramLine line = context.get(HologramLine.class);
-        if (line == null)
+        Hologram hologram = context.get(Hologram.class);
+        if (hologram == null)
             return List.of();
 
-        return HologramProperty.values(line.getType()).stream().map(HologramProperty::getName).toList();
+        return hologram.getProperties().getTag().stream()
+                .map(HologramProperty::getName)
+                .toList();
     }
 
 }

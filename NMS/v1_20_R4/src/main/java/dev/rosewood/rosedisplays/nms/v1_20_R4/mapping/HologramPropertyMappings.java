@@ -1,8 +1,8 @@
 package dev.rosewood.rosedisplays.nms.v1_20_R4.mapping;
 
 import dev.rosewood.rosedisplays.hologram.HologramLine;
-import dev.rosewood.rosedisplays.hologram.HologramLineType;
-import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
+import dev.rosewood.rosedisplays.hologram.DisplayEntityType;
+import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
 import dev.rosewood.rosedisplays.model.ItemDisplayType;
@@ -85,7 +85,7 @@ public class HologramPropertyMappings {
         this.define(HologramProperty.GLOW_COLOR_OVERRIDE, 22, EntityDataSerializers.INT, COLOR_TRANSFORMER, -1);
 
         // Text Display
-        this.define(HologramProperty.TEXT, 23, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(""));
+        this.define(HologramProperty.TEXT, 23, EntityDataSerializers.COMPONENT, TEXT_TRANSFORMER, CraftChatMessage.fromStringOrNull(" "));
         this.define(HologramProperty.LINE_WIDTH, 24, EntityDataSerializers.INT, Function.identity(), 200);
         this.define(HologramProperty.BACKGROUND_COLOR, 25, EntityDataSerializers.INT, COLOR_TRANSFORMER, 0x40000000);
         this.define(HologramProperty.TEXT_OPACITY, 26, EntityDataSerializers.BYTE, Function.identity(), (byte) -1);
@@ -121,12 +121,12 @@ public class HologramPropertyMappings {
         this.propertyMappings.put(property, mapping);
     }
 
-    private <T> void defineMask(int accessorId, EntityDataSerializer<T> entityDataSerializer, List<HologramProperty<?>> properties, Function<HologramProperties, T> transformer, T defaultValue) {
+    private <T> void defineMask(int accessorId, EntityDataSerializer<T> entityDataSerializer, List<HologramProperty<?>> properties, Function<HologramPropertyContainer, T> transformer, T defaultValue) {
         if (properties.stream().anyMatch(x -> !x.isMapped()))
             throw new IllegalArgumentException("Cannot create a mask for unmapped properties");
 
         EntityDataAccessor<T> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
-        HologramPropertyMapping<HologramProperties, T> mapping = new HologramPropertyMapping<>(HologramProperties.class, entityDataAccessor, transformer, defaultValue);
+        HologramPropertyMapping<HologramPropertyContainer, T> mapping = new HologramPropertyMapping<>(HologramPropertyContainer.class, entityDataAccessor, transformer, defaultValue);
         this.propertyMappingMasks.put(mapping, properties);
     }
 
@@ -143,8 +143,8 @@ public class HologramPropertyMappings {
     }
 
     @SuppressWarnings("unchecked")
-    private SynchedEntityData.DataValue<?> createMaskDataValue(HologramPropertyMapping<?, ?> mapping, HologramProperties properties) {
-        return ((HologramPropertyMapping<HologramProperties, ?>) mapping).createDataValue(properties);
+    private SynchedEntityData.DataValue<?> createMaskDataValue(HologramPropertyMapping<?, ?> mapping, HologramPropertyContainer properties) {
+        return ((HologramPropertyMapping<HologramPropertyContainer, ?>) mapping).createDataValue(properties);
     }
 
     public List<SynchedEntityData.DataValue<?>> createFreshDataValues(HologramLine hologramLine) {
@@ -155,10 +155,10 @@ public class HologramPropertyMappings {
         return this.createDataValues(hologramLine.getType(), hologramLine.getProperties(), false);
     }
 
-    private List<SynchedEntityData.DataValue<?>> createDataValues(HologramLineType lineType, HologramProperties properties, boolean fresh) {
+    private List<SynchedEntityData.DataValue<?>> createDataValues(DisplayEntityType lineType, HologramPropertyContainer properties, boolean fresh) {
         List<SynchedEntityData.DataValue<?>> dataValues = new ArrayList<>();
 
-        HologramProperties actingProperties;
+        HologramPropertyContainer actingProperties;
         if (fresh) {
             actingProperties = properties;
         } else {

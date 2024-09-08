@@ -2,7 +2,6 @@ package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.hologram.Hologram;
-import dev.rosewood.rosedisplays.hologram.HologramLine;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
@@ -23,11 +22,11 @@ public class AttachCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Hologram hologram, HologramLine line, Player player) {
+    public void execute(CommandContext context, Hologram hologram, Player player) {
         if (player == null)
             player = (Player) context.getSender();
 
-        NMSAdapter.getHandler().sendHologramSetVehiclePacket(line, player, List.of(player));
+        NMSAdapter.getHandler().sendHologramSetVehiclePacket(hologram, player, List.of(player));
         this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-attach-success", StringPlaceholders.of("name", hologram.getName(), "player", player.getName()));
     }
 
@@ -35,11 +34,9 @@ public class AttachCommand extends BaseRoseCommand {
     protected CommandInfo createCommandInfo() {
         return CommandInfo.builder("attach")
                 .descriptionKey("command-attach-description")
-                .permission("rosedisplays.hologram")
                 .playerOnly()
                 .arguments(ArgumentsDefinition.builder()
                         .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
-                        .required("line", DisplaysArgumentHandlers.HOLOGRAM_LINE)
                         .optional("player", ArgumentHandlers.PLAYER)
                         .build())
                 .build();

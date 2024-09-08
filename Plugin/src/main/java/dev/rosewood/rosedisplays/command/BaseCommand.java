@@ -1,5 +1,6 @@
 package dev.rosewood.rosedisplays.command;
 
+import dev.rosewood.rosedisplays.command.line.BaseLineCommand;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.HelpCommand;
 import dev.rosewood.rosegarden.command.PrimaryCommand;
@@ -20,6 +21,7 @@ public class BaseCommand extends PrimaryCommand {
                 .arguments(ArgumentsDefinition.builder()
                         .optionalSub(
                                 new AttachCommand(this.rosePlugin),
+                                new BaseLineCommand(this.rosePlugin),
                                 new CreateCommand(this.rosePlugin),
                                 new DeleteCommand(this.rosePlugin),
                                 new EditCommand(this.rosePlugin),

@@ -1,11 +1,12 @@
 package dev.rosewood.rosedisplays;
 
+import dev.rosewood.rosedisplays.config.SettingKey;
 import dev.rosewood.rosedisplays.manager.CommandManager;
-import dev.rosewood.rosedisplays.manager.ConfigurationManager;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -25,7 +26,7 @@ public class RoseDisplays extends RosePlugin {
     }
 
     public RoseDisplays() {
-        super(-1, 11043, ConfigurationManager.class, null, LocaleManager.class, CommandManager.class);
+        super(-1, 11043, null, LocaleManager.class, CommandManager.class);
 
         instance = this;
     }
@@ -49,6 +50,23 @@ public class RoseDisplays extends RosePlugin {
         return List.of(
                 HologramManager.class
         );
+    }
+
+    @Override
+    protected List<RoseSetting<?>> getRoseConfigSettings() {
+        return SettingKey.getKeys();
+    }
+
+    @Override
+    protected String[] getRoseConfigHeader() {
+        return new String[] {
+                "     __________                    ________   __                __",
+                "     \\______   \\ ____  ______ ____ \\______ \\ |__| ____________ |  | _____  ___ __  ______",
+                "      |       _//  _ \\/  ___// __ \\ |    |  \\|  |/  ___/\\____ \\|  | \\__  \\<   |  |/  ___/",
+                "      |    |   (  <_> )___ \\\\  ___/ |    `   \\  |\\___ \\ |  |_> >  |__/ __ \\\\___  |\\___ \\",
+                "      |____|_  /\\____/____  >\\___  >_______  /__/____  >|   __/|____(____  / ____/____  >",
+                "             \\/           \\/     \\/        \\/        \\/ |__|             \\/\\/         \\/"
+        };
     }
 
 }

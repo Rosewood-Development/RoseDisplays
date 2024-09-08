@@ -1,7 +1,8 @@
 package dev.rosewood.rosedisplays.nms.v1_21_R1;
 
-import dev.rosewood.rosedisplays.hologram.HologramLine;
+import dev.rosewood.rosedisplays.RoseDisplays;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
+import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosedisplays.nms.util.ReflectionUtils;
 import dev.rosewood.rosedisplays.nms.v1_21_R1.mapping.HologramPropertyMappings;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -44,17 +46,17 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendHologramSpawnPacket(Object hologramLineArg, Location location, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        EntityType<?> entityType = switch (hologramLine.getType()) {
+    public void sendEntitySpawnPacket(Object hologramArg, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        EntityType<?> entityType = switch (hologram.getType()) {
             case TEXT -> EntityType.TEXT_DISPLAY;
             case ITEM -> EntityType.ITEM_DISPLAY;
             case BLOCK -> EntityType.BLOCK_DISPLAY;
-            default -> throw new IllegalArgumentException("Unsupported hologram line type: " + hologramLine.getType());
         };
 
+        Location location = hologram.getLocation();
         ClientboundAddEntityPacket packet = new ClientboundAddEntityPacket(
-                hologramLine.getEntityId(),
+                hologram.getEntityId(),
                 UUID.randomUUID(),
                 location.getX(),
                 location.getY(),
@@ -70,39 +72,43 @@ public class NMSHandlerImpl implements NMSHandler {
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
 
-        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createFreshDataValues(hologramLine);
-        ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
+        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createFreshDataValues(hologram.getProperties());
+        ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(hologram.getEntityId(), dataValues);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(metadataPacket);
+        RoseDisplays.getInstance().getLogger().warning("Sending spawn packet to " + players.stream().map(Player::getName).collect(Collectors.joining(", ")));
     }
 
     @Override
-    public void sendHologramMetadataPacket(Object hologramLineArg, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createDataValues(hologramLine);
-        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
+    public void sendEntityMetadataPacket(Object hologramArg, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createDataValues(hologram.getProperties());
+        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologram.getEntityId(), dataValues);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
+        RoseDisplays.getInstance().getLogger().warning("Sending metadata packet to " + players.stream().map(Player::getName).collect(Collectors.joining(", ")));
     }
 
     @Override
-    public void sendHologramDespawnPacket(Object hologramLineArg, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologramLine.getEntityId());
+    public void sendEntityDespawnPacket(Object hologramArg, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologram.getEntityId());
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
+        RoseDisplays.getInstance().getLogger().warning("Sending despawn packet to " + players.stream().map(Player::getName).collect(Collectors.joining(", ")));
     }
 
     @Override
-    public void sendHologramSetVehiclePacket(Object hologramLineArg, org.bukkit.entity.Entity vehicle, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
+    public void sendHologramSetVehiclePacket(Object hologramArg, org.bukkit.entity.Entity vehicle, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
         Level world = ((CraftWorld) vehicle.getWorld()).getHandle();
         FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
         byteBuf.writeVarInt(vehicle.getEntityId());
-        byteBuf.writeVarIntArray(new int[]{hologramLine.getEntityId()});
+        byteBuf.writeVarIntArray(new int[]{hologram.getEntityId()});
         ClientboundSetPassengersPacket packet = this.constructPacket(ClientboundSetPassengersPacket.class, byteBuf);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
+        RoseDisplays.getInstance().getLogger().warning("Sending setvehicle packet to " + players.stream().map(Player::getName).collect(Collectors.joining(", ")));
     }
 
     @Override
