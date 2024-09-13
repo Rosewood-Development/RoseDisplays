@@ -44,7 +44,7 @@ public final class HologramPropertyContainer {
      * @param <T> The HologramProperty value type
      */
     public <T> T get(HologramProperty<T> property) {
-        return property.getType().cast(this.properties.get(property));
+        return property.getValueType().cast(this.properties.get(property));
     }
 
     /**

@@ -1,7 +1,8 @@
 package dev.rosewood.rosedisplays.nms.v1_19_R3;
 
-import dev.rosewood.rosedisplays.hologram.HologramLine;
+import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
+import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosedisplays.nms.util.ReflectionUtils;
 import dev.rosewood.rosedisplays.nms.v1_19_R3.mapping.HologramPropertyMappings;
@@ -32,17 +33,11 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendEntitySpawnPacket(Object hologramLineArg, Location location, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        EntityType<?> entityType = switch (hologramLine.getType()) {
-            case TEXT -> EntityType.TEXT_DISPLAY;
-            case ITEM -> EntityType.ITEM_DISPLAY;
-            case BLOCK -> EntityType.BLOCK_DISPLAY;
-            default -> throw new IllegalArgumentException("Unsupported hologram line type: " + hologramLine.getType());
-        };
-
+    public void sendEntitySpawnPacket(Object hologramArg, Location location, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        EntityType<?> entityType = this.getEntityType(hologram.getType());
         ClientboundAddEntityPacket packet = new ClientboundAddEntityPacket(
-                hologramLine.getEntityId(),
+                hologram.getEntityId(),
                 UUID.randomUUID(),
                 location.getX(),
                 location.getY(),
@@ -58,25 +53,25 @@ public class NMSHandlerImpl implements NMSHandler {
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
 
-        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createFreshDataValues(hologramLine);
-        ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
+        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createFreshDataValues(hologram.getProperties());
+        ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(hologram.getEntityId(), dataValues);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(metadataPacket);
     }
 
     @Override
-    public void sendEntityMetadataPacket(Object hologramLineArg, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createDataValues(hologramLine);
-        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologramLine.getEntityId(), dataValues);
+    public void sendEntityMetadataPacket(Object hologramArg, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        List<SynchedEntityData.DataValue<?>> dataValues = HologramPropertyMappings.getInstance().createDataValues(hologram.getProperties());
+        ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(hologram.getEntityId(), dataValues);
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
     }
 
     @Override
-    public void sendEntityDespawnPacket(Object hologramLineArg, Collection<Player> players) {
-        HologramLine hologramLine = (HologramLine) hologramLineArg;
-        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologramLine.getEntityId());
+    public void sendEntityDespawnPacket(Object hologramArg, Collection<Player> players) {
+        DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
+        ClientboundRemoveEntitiesPacket packet = new ClientboundRemoveEntitiesPacket(hologram.getEntityId());
         for (Player player : players)
             ((CraftPlayer) player).getHandle().connection.send(packet);
     }
@@ -90,6 +85,16 @@ public class NMSHandlerImpl implements NMSHandler {
     public boolean isPropertyAvailable(Object propertyArg) {
         HologramProperty<?> property = (HologramProperty<?>) propertyArg;
         return HologramPropertyMappings.getInstance().isAvailable(property);
+    }
+
+    private EntityType<?> getEntityType(HologramType type) {
+        if (type == HologramType.TEXT_DISPLAY_ENTITY) {
+            return EntityType.TEXT_DISPLAY;
+        } else if (type == HologramType.ITEM_DISPLAY_ENTITY) {
+            return EntityType.ITEM_DISPLAY;
+        } else if (type == HologramType.BLOCK_DISPLAY_ENTITY) {
+            return EntityType.BLOCK_DISPLAY;
+        } else throw new IllegalStateException("Invalid DisplayEntity type");
     }
 
 }

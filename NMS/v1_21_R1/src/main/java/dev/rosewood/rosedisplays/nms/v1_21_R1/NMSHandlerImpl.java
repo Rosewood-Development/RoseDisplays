@@ -1,6 +1,7 @@
 package dev.rosewood.rosedisplays.nms.v1_21_R1;
 
 import dev.rosewood.rosedisplays.RoseDisplays;
+import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
@@ -25,10 +26,8 @@ import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
@@ -46,15 +45,9 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
-    public void sendEntitySpawnPacket(Object hologramArg, Collection<Player> players) {
+    public void sendEntitySpawnPacket(Object hologramArg, Location location, Collection<Player> players) {
         DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
-        EntityType<?> entityType = switch (hologram.getType()) {
-            case TEXT -> EntityType.TEXT_DISPLAY;
-            case ITEM -> EntityType.ITEM_DISPLAY;
-            case BLOCK -> EntityType.BLOCK_DISPLAY;
-        };
-
-        Location location = hologram.getLocation();
+        EntityType<?> entityType = this.getEntityType(hologram.getType());
         ClientboundAddEntityPacket packet = new ClientboundAddEntityPacket(
                 hologram.getEntityId(),
                 UUID.randomUUID(),
@@ -101,7 +94,6 @@ public class NMSHandlerImpl implements NMSHandler {
     @Override
     public void sendHologramSetVehiclePacket(Object hologramArg, org.bukkit.entity.Entity vehicle, Collection<Player> players) {
         DisplayEntityHologram hologram = (DisplayEntityHologram) hologramArg;
-        Level world = ((CraftWorld) vehicle.getWorld()).getHandle();
         FriendlyByteBuf byteBuf = new FriendlyByteBuf(Unpooled.buffer());
         byteBuf.writeVarInt(vehicle.getEntityId());
         byteBuf.writeVarIntArray(new int[]{hologram.getEntityId()});
@@ -120,6 +112,16 @@ public class NMSHandlerImpl implements NMSHandler {
     public boolean isPropertyAvailable(Object propertyArg) {
         HologramProperty<?> property = (HologramProperty<?>) propertyArg;
         return HologramPropertyMappings.getInstance().isAvailable(property);
+    }
+
+    private EntityType<?> getEntityType(HologramType type) {
+        if (type == HologramType.TEXT_DISPLAY_ENTITY) {
+            return EntityType.TEXT_DISPLAY;
+        } else if (type == HologramType.ITEM_DISPLAY_ENTITY) {
+            return EntityType.ITEM_DISPLAY;
+        } else if (type == HologramType.BLOCK_DISPLAY_ENTITY) {
+            return EntityType.BLOCK_DISPLAY;
+        } else throw new IllegalStateException("Invalid DisplayEntity type");
     }
 
     @SuppressWarnings("unchecked")

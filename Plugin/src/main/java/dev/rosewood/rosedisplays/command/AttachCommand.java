@@ -1,7 +1,7 @@
 package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
-import dev.rosewood.rosedisplays.hologram.Hologram;
+import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
@@ -22,7 +22,7 @@ public class AttachCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Hologram hologram, Player player) {
+    public void execute(CommandContext context, HologramGroup hologram, Player player) {
         if (player == null)
             player = (Player) context.getSender();
 
@@ -36,7 +36,7 @@ public class AttachCommand extends BaseRoseCommand {
                 .descriptionKey("command-attach-description")
                 .playerOnly()
                 .arguments(ArgumentsDefinition.builder()
-                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM_GROUP)
                         .optional("player", ArgumentHandlers.PLAYER)
                         .build())
                 .build();

@@ -2,27 +2,34 @@ package dev.rosewood.rosedisplays.hologram.property;
 
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import java.util.Objects;
+import org.bukkit.persistence.PersistentDataType;
 
-public class HologramProperty<T> {
+public sealed class HologramProperty<T> permits MappedHologramProperty {
 
     private final String name;
     private final ArgumentHandler<T> argumentHandler;
+    private final PersistentDataType<?, T> persistentDataType;
 
-    protected HologramProperty(String name, ArgumentHandler<T> argumentHandler) {
+    HologramProperty(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
         this.name = name;
         this.argumentHandler = argumentHandler;
+        this.persistentDataType = persistentDataType;
     }
 
     public String getName() {
         return this.name;
     }
 
-    public ArgumentHandler<?> getArgumentHandler() {
+    public ArgumentHandler<T> getArgumentHandler() {
         return this.argumentHandler;
     }
 
-    public Class<T> getType() {
+    public Class<T> getValueType() {
         return this.argumentHandler.getHandledType();
+    }
+
+    public PersistentDataType<?, T> getPersistentDataType() {
+        return this.persistentDataType;
     }
 
     @Override
@@ -42,7 +49,7 @@ public class HologramProperty<T> {
     public String toString() {
         return "HologramProperty[" +
                 "name=" + this.name + ", " +
-                "type=" + this.getType() +
+                "type=" + this.getValueType() +
                 "]";
     }
 

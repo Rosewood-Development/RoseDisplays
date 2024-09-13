@@ -1,20 +1,19 @@
 package dev.rosewood.rosedisplays.manager;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import dev.rosewood.rosedisplays.RoseDisplays;
 import dev.rosewood.rosedisplays.config.SettingKey;
-import dev.rosewood.rosedisplays.hologram.DisplayEntityType;
+import dev.rosewood.rosedisplays.datatype.CustomPersistentDataType;
 import dev.rosewood.rosedisplays.hologram.Hologram;
-import dev.rosewood.rosedisplays.hologram.UnloadedHologram;
-import dev.rosewood.rosedisplays.hologram.renderer.HologramRenderer;
-import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
+import dev.rosewood.rosedisplays.hologram.HologramGroup;
+import dev.rosewood.rosedisplays.hologram.HologramType;
+import dev.rosewood.rosedisplays.hologram.UnloadedHologramGroup;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
-import dev.rosewood.rosedisplays.model.CustomPersistentDataType;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,15 +36,15 @@ import org.bukkit.persistence.PersistentDataContainer;
 
 public class HologramManager extends Manager implements Listener {
 
-    private final Multimap<ChunkLocation, Hologram> loadedHolograms;
-    private final Multimap<ChunkLocation, UnloadedHologram> unloadedHolograms;
+    private final ListMultimap<ChunkLocation, HologramGroup> loadedHolograms;
+    private final ListMultimap<ChunkLocation, UnloadedHologramGroup> unloadedHolograms;
     private final Map<ChunkLocation, Long> chunkTickets;
 
     public HologramManager(RosePlugin rosePlugin) {
         super(rosePlugin);
 
-        this.loadedHolograms = MultimapBuilder.hashKeys().hashSetValues().build();
-        this.unloadedHolograms = MultimapBuilder.hashKeys().hashSetValues().build();
+        this.loadedHolograms = MultimapBuilder.hashKeys().arrayListValues().build();
+        this.unloadedHolograms = MultimapBuilder.hashKeys().arrayListValues().build();
         this.chunkTickets = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, rosePlugin);
@@ -71,19 +70,19 @@ public class HologramManager extends Manager implements Listener {
         for (Player player : Bukkit.getOnlinePlayers())
             playersPerWorld.put(player.getWorld().getUID(), player);
 
-        for (Hologram hologram : this.loadedHolograms.values()) {
-            HologramRenderer renderer = hologram.getRenderer();
-            for (Player player : playersPerWorld.get(hologram.getLocation().getWorld().getUID())) {
-                boolean watching = renderer.isWatching(player);
-                boolean inRange = hologram.isInRange(player);
-                if (inRange && !watching) {
-                    renderer.addWatcher(player);
-                } else if (!inRange && watching) {
-                    renderer.removeWatcher(player);
+        for (HologramGroup group : this.loadedHolograms.values()) {
+            if (group.shouldKeepWatchersInSync()) {
+                for (Player player : playersPerWorld.get(group.getOrigin().getWorld().getUID())) {
+                    boolean watching = group.isWatching(player);
+                    boolean inRange = group.isInRange(player);
+                    if (inRange && !watching) {
+                        group.addWatcher(player);
+                    } else if (!inRange && watching) {
+                        group.removeWatcher(player);
+                    }
                 }
             }
-
-            renderer.update();
+            group.update();
         }
     }
 
@@ -109,30 +108,31 @@ public class HologramManager extends Manager implements Listener {
         chunk.removePluginChunkTicket(this.rosePlugin);
     }
 
-    public DisplayEntityHologram createDisplayEntityHologram(String name, DisplayEntityType type, Location location) {
+    public Hologram createHologram(String name, HologramType type, Location location) {
         if (this.getHologramNames().contains(name.toLowerCase()))
-            throw new IllegalArgumentException("A hologram with the name " + name + " already exists");
+            return null;
 
-        DisplayEntityHologram hologram = new DisplayEntityHologram(name, type, location);
-        this.loadedHolograms.put(ChunkLocation.of(location), hologram);
+        HologramGroup group = new HologramGroup(name, location);
+        Hologram hologram = type.create();
+        group.addHologram(hologram);
+        this.loadedHolograms.put(ChunkLocation.of(location), group);
         return hologram;
     }
 
     public boolean deleteHologram(String name) {
-        Hologram hologram = this.getHologram(name);
+        HologramGroup hologram = this.getHologram(name);
         if (hologram == null)
             return false;
 
-        hologram.getRenderer().removeAllWatchers();
+        hologram.removeAllWatchers();
 
         ChunkLocation chunkLocation = hologram.getChunkLocation();
-        Collection<Hologram> chunkHolograms = this.loadedHolograms.get(chunkLocation);
+        Collection<HologramGroup> chunkHolograms = this.loadedHolograms.get(chunkLocation);
         chunkHolograms.remove(hologram);
 
-        Chunk chunk = hologram.getLocation().getChunk();
-        if (chunkHolograms.isEmpty() && this.chunkTickets.containsKey(chunkLocation)) {
+        Chunk chunk = hologram.getOrigin().getChunk();
+        if (chunkHolograms.isEmpty() && this.chunkTickets.containsKey(chunkLocation))
             this.removeChunkTicket(chunk);
-        }
 
         this.saveHolograms(chunk, this.loadedHolograms.get(chunkLocation));
         return true;
@@ -144,9 +144,9 @@ public class HologramManager extends Manager implements Listener {
      * @param name The name of the hologram to get
      * @return The hologram or null or one with that name did not exist
      */
-    public Hologram getHologram(String name) {
+    public HologramGroup getHologram(String name) {
         // Search loaded holograms first
-        Hologram hologram = this.loadedHolograms.values().stream()
+        HologramGroup hologram = this.loadedHolograms.values().stream()
                 .filter(x -> x.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
@@ -154,7 +154,7 @@ public class HologramManager extends Manager implements Listener {
             return hologram;
 
         // Search unloaded holograms
-        UnloadedHologram unloadedHologram = this.unloadedHolograms.values().stream()
+        UnloadedHologramGroup unloadedHologram = this.unloadedHolograms.values().stream()
                 .filter(x -> x.name().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
@@ -195,16 +195,15 @@ public class HologramManager extends Manager implements Listener {
             return;
 
         try {
-            UnloadedHologram[] unloadedHologramsArray = pdc.get(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.UNLOADED_HOLOGRAM_ARRAY);
-            if (unloadedHologramsArray == null || unloadedHologramsArray.length == 0) {
+            List<UnloadedHologramGroup> unloadedHolograms = pdc.get(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.forList(CustomPersistentDataType.UNLOADED_HOLOGRAM_GROUP));
+            if (unloadedHolograms == null || unloadedHolograms.isEmpty()) {
                 pdc.remove(CustomPersistentDataType.HOLOGRAM_KEY);
                 return;
             }
 
-            List<UnloadedHologram> unloadedHolograms = Arrays.asList(unloadedHologramsArray);
             unloadedHolograms.forEach(x -> this.unloadedHolograms.put(x.chunkLocation(), x));
             unloadedHolograms.stream()
-                    .map(UnloadedHologram::chunkLocation)
+                    .map(UnloadedHologramGroup::chunkLocation)
                     .distinct()
                     .filter(chunkLocation -> world.isChunkLoaded(chunkLocation.x(), chunkLocation.z()))
                     .map(chunkLocation -> world.getChunkAt(chunkLocation.x(), chunkLocation.z()))
@@ -219,15 +218,15 @@ public class HologramManager extends Manager implements Listener {
         for (Chunk chunk : world.getLoadedChunks())
             this.unloadHolograms(chunk);
 
-        List<UnloadedHologram> worldHolograms = new ArrayList<>();
-        for (UnloadedHologram unloadedHologram : this.unloadedHolograms.values())
+        List<UnloadedHologramGroup> worldHolograms = new ArrayList<>();
+        for (UnloadedHologramGroup unloadedHologram : this.unloadedHolograms.values())
             if (unloadedHologram.chunkLocation().world().equals(world.getName()))
                 worldHolograms.add(unloadedHologram);
         this.unloadedHolograms.values().removeAll(worldHolograms);
 
         PersistentDataContainer pdc = world.getPersistentDataContainer();
         if (!worldHolograms.isEmpty()) {
-            pdc.set(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.UNLOADED_HOLOGRAM_ARRAY, worldHolograms.toArray(UnloadedHologram[]::new));
+            pdc.set(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.forList(CustomPersistentDataType.UNLOADED_HOLOGRAM_GROUP), worldHolograms);
         } else {
             pdc.remove(CustomPersistentDataType.HOLOGRAM_KEY);
         }
@@ -244,18 +243,18 @@ public class HologramManager extends Manager implements Listener {
         }
 
         try {
-            Hologram[] holograms = pdc.get(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.HOLOGRAM_ARRAY);
-            if (holograms == null || holograms.length == 0) {
+            List<HologramGroup> holograms = pdc.get(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.forList(CustomPersistentDataType.HOLOGRAM_GROUP));
+            if (holograms == null || holograms.isEmpty()) {
                 if (unloaded > 0)
                     RoseDisplays.getInstance().getLogger().warning("Expected " + unloaded + " holograms in chunk " + chunkLocation + " but none were found. Ignoring them.");
                 pdc.remove(CustomPersistentDataType.HOLOGRAM_KEY);
                 return;
             }
 
-            if (unloaded != holograms.length)
-                RoseDisplays.getInstance().getLogger().warning("Expected " + unloaded + " holograms in chunk " + chunkLocation + " but " + holograms.length + " were found. Loading them anyway.");
+            if (unloaded != holograms.size())
+                RoseDisplays.getInstance().getLogger().warning("Expected " + unloaded + " holograms in chunk " + chunkLocation + " but " + holograms.size() + " were found. Loading them anyway.");
 
-            this.loadedHolograms.putAll(chunkLocation, Arrays.asList(holograms));
+            this.loadedHolograms.putAll(chunkLocation, holograms);
         } catch (Exception e) {
             RoseDisplays.getInstance().getLogger().warning("Failed to load holograms in chunk " + chunkLocation + ": " + e.getMessage());
             pdc.remove(CustomPersistentDataType.HOLOGRAM_KEY);
@@ -264,20 +263,20 @@ public class HologramManager extends Manager implements Listener {
 
     public void unloadHolograms(Chunk chunk) {
         ChunkLocation chunkLocation = ChunkLocation.of(chunk);
-        Collection<Hologram> holograms = this.loadedHolograms.removeAll(chunkLocation);
+        List<HologramGroup> holograms = this.loadedHolograms.removeAll(chunkLocation);
 
         holograms.forEach(hologram -> {
             this.unloadedHolograms.put(chunkLocation, hologram.asUnloaded());
-            hologram.getRenderer().removeAllWatchers();
+            hologram.removeAllWatchers();
         });
 
         this.saveHolograms(chunk, holograms);
     }
 
-    private void saveHolograms(Chunk chunk, Collection<Hologram> holograms) {
+    private void saveHolograms(Chunk chunk, List<HologramGroup> holograms) {
         PersistentDataContainer pdc = chunk.getPersistentDataContainer();
         if (!holograms.isEmpty()) {
-            pdc.set(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.HOLOGRAM_ARRAY, holograms.toArray(Hologram[]::new));
+            pdc.set(CustomPersistentDataType.HOLOGRAM_KEY, CustomPersistentDataType.forList(CustomPersistentDataType.HOLOGRAM_GROUP), holograms);
         } else {
             pdc.remove(CustomPersistentDataType.HOLOGRAM_KEY);
         }
@@ -306,7 +305,7 @@ public class HologramManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        this.loadedHolograms.values().forEach(x -> x.getRenderer().removeWatcher(player));
+        this.loadedHolograms.values().forEach(x -> x.removeWatcher(player));
     }
 
 }

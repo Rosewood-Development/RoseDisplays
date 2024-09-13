@@ -1,44 +1,55 @@
 package dev.rosewood.rosedisplays.hologram;
 
-import dev.rosewood.rosedisplays.config.SettingKey;
 import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
-import dev.rosewood.rosedisplays.hologram.renderer.HologramRenderer;
-import dev.rosewood.rosedisplays.model.ChunkLocation;
+import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
 
 public abstract class Hologram {
 
-    private final String name;
+    protected final HologramType type;
+    protected final HologramPropertyContainer properties;
 
-    public Hologram(String name) {
-        this.name = name;
+    public Hologram(HologramType type) {
+        this.type = type;
+        this.properties = new HologramPropertyContainer(type.tag());
     }
 
-    public String getName() {
-        return this.name;
+    public Hologram(HologramType type, HologramPropertyContainer properties, PersistentDataContainer container, PersistentDataAdapterContext context) {
+        if (!properties.getTag().equals(type.tag()))
+            throw new IllegalArgumentException("Invalid properties for the given hologram type");
+
+        this.type = type;
+        this.properties = properties;
+        this.readAdditionalPDCData(container, context);
     }
 
-    public abstract HologramPropertyContainer getProperties();
-
-    public abstract HologramRenderer getRenderer();
-
-    public abstract Location getLocation();
-
-    public boolean isInRange(Player player) {
-        Location location = this.getLocation();
-        int maxDistance = SettingKey.HOLOGRAM_RENDER_DISTANCE.get();
-        return player.getWorld().equals(location.getWorld()) && location.distanceSquared(player.getLocation()) <= maxDistance * maxDistance;
+    public HologramType getType() {
+        return this.type;
     }
 
-    public ChunkLocation getChunkLocation() {
-        return ChunkLocation.of(this.getLocation());
+    public HologramPropertyContainer getProperties() {
+        return this.properties;
     }
 
-    @NotNull
-    public UnloadedHologram asUnloaded() {
-        return new UnloadedHologram(this.name, this.getChunkLocation());
+    public abstract void update(Location location, Set<Player> players);
+
+    public void onWatcherAdded(Location location, Player player) {
+
+    }
+
+    public void onWatcherRemoved(Player player) {
+
+    }
+
+    public void writeAdditionalPDCData(PersistentDataContainer container, PersistentDataAdapterContext context) {
+
+    }
+
+    public void readAdditionalPDCData(PersistentDataContainer container, PersistentDataAdapterContext context) {
+
     }
 
 }

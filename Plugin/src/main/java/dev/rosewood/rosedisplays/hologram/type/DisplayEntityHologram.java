@@ -1,58 +1,69 @@
 package dev.rosewood.rosedisplays.hologram.type;
 
 import dev.rosewood.rosedisplays.hologram.Hologram;
-import dev.rosewood.rosedisplays.hologram.DisplayEntityType;
+import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
-import dev.rosewood.rosedisplays.hologram.renderer.DisplayEntityHologramRenderer;
-import dev.rosewood.rosedisplays.hologram.renderer.HologramRenderer;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
+import dev.rosewood.rosedisplays.nms.NMSHandler;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
 
 public class DisplayEntityHologram extends Hologram {
 
-    private final HologramRenderer renderer;
-    private final DisplayEntityType type;
-    private final HologramPropertyContainer properties;
     private final int entityId;
-    private final Location location;
+    private final NMSHandler nmsHandler;
+    private Location lastLocation;
 
-    public DisplayEntityHologram(String name, DisplayEntityType type, Location location) {
-        this(name, type, location, new HologramPropertyContainer(type.getTag()));
+    public DisplayEntityHologram(HologramType type) {
+        super(type);
+        this.verifyType(type);
+        this.nmsHandler = NMSAdapter.getHandler();
+        this.entityId = this.nmsHandler.getNextAvailableEntityId();
     }
 
-    public DisplayEntityHologram(String name, DisplayEntityType type, Location location, HologramPropertyContainer properties) {
-        this(name, type, location, properties, NMSAdapter.getHandler().getNextAvailableEntityId());
-    }
-
-    private DisplayEntityHologram(String name, DisplayEntityType type, Location location, HologramPropertyContainer properties, int entityId) {
-        super(name);
-        this.type = type;
-        this.location = location;
-        this.properties = properties;
-        this.entityId = entityId;
-        this.renderer = new DisplayEntityHologramRenderer(this);
-    }
-
-    public DisplayEntityType getType() {
-        return this.type;
+    public DisplayEntityHologram(HologramType type, HologramPropertyContainer properties, PersistentDataContainer container, PersistentDataAdapterContext context) {
+        super(type, properties, container, context);
+        this.verifyType(type);
+        this.nmsHandler = NMSAdapter.getHandler();
+        this.entityId = this.nmsHandler.getNextAvailableEntityId();
     }
 
     public int getEntityId() {
         return this.entityId;
     }
 
-    public HologramPropertyContainer getProperties() {
-        return this.properties;
+    @Override
+    public void update(Location location, Set<Player> players) {
+        // TODO: Send a teleport packet if the location changes
+        this.lastLocation = location;
+
+        // Update dirty line properties and clean
+        if (this.properties.isDirty()) {
+            if (!players.isEmpty())
+                this.nmsHandler.sendEntityMetadataPacket(this, players);
+            this.properties.clean();
+        }
     }
 
     @Override
-    public HologramRenderer getRenderer() {
-        return this.renderer;
+    public void onWatcherAdded(Location location, Player player) {
+        this.nmsHandler.sendEntitySpawnPacket(this, location, List.of(player));
     }
 
     @Override
-    public Location getLocation() {
-        return this.location;
+    public void onWatcherRemoved(Player player) {
+        this.nmsHandler.sendEntityDespawnPacket(this, List.of(player));
+    }
+
+    private void verifyType(HologramType type) {
+        if (type != HologramType.TEXT_DISPLAY_ENTITY
+                && type != HologramType.ITEM_DISPLAY_ENTITY
+                && type != HologramType.BLOCK_DISPLAY_ENTITY)
+            throw new IllegalArgumentException("Invalid HologramType, not a DisplayEntityHologram");
     }
 
 }

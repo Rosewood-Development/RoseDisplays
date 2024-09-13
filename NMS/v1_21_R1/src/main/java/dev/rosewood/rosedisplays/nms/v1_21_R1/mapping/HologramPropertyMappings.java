@@ -120,7 +120,7 @@ public class HologramPropertyMappings {
             throw new IllegalArgumentException("Cannot define an unmapped property");
 
         EntityDataAccessor<R> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
-        HologramPropertyMapping<T, R> mapping = new HologramPropertyMapping<>(property.getType(), entityDataAccessor, transformer, defaultValue);
+        HologramPropertyMapping<T, R> mapping = new HologramPropertyMapping<>(property.getValueType(), entityDataAccessor, transformer, defaultValue);
         this.propertyMappings.put(property, mapping);
     }
 

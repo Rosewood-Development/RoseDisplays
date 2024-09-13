@@ -2,6 +2,7 @@ package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.hologram.Hologram;
+import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
@@ -28,7 +29,7 @@ public class EditCommand extends BaseRoseCommand {
                 .permission("rosedisplays.hologram")
                 .playerOnly()
                 .arguments(ArgumentsDefinition.builder()
-                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM_GROUP)
                         .optionalSub(
                                 new SetCommand(this.rosePlugin),
                                 new UnsetCommand(this.rosePlugin)
@@ -43,8 +44,8 @@ public class EditCommand extends BaseRoseCommand {
         }
 
         @RoseExecutable
-        public <T> void execute(CommandContext context, Hologram hologram, HologramProperty<T> property, T value) {
-            hologram.getProperties().set(property, value);
+        public <T> void execute(CommandContext context, HologramGroup hologram, HologramProperty<T> property, T value) {
+            hologram.getHolograms().get(0).getProperties().set(property, value);
         }
 
         @Override
@@ -66,8 +67,8 @@ public class EditCommand extends BaseRoseCommand {
         }
 
         @RoseExecutable
-        public void execute(CommandContext context, Hologram hologram, HologramProperty<?> property) {
-            hologram.getProperties().unset(property);
+        public void execute(CommandContext context, HologramGroup hologram, HologramProperty<?> property) {
+            hologram.getHolograms().get(0).getProperties().unset(property);
         }
 
         @Override

@@ -1,7 +1,7 @@
 package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
-import dev.rosewood.rosedisplays.hologram.Hologram;
+import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosegarden.RosePlugin;
@@ -19,7 +19,7 @@ public class DeleteCommand extends BaseRoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Hologram hologram) {
+    public void execute(CommandContext context, HologramGroup hologram) {
         LocaleManager localeManager = this.rosePlugin.getManager(LocaleManager.class);
         HologramManager hologramManager = this.rosePlugin.getManager(HologramManager.class);
 
@@ -36,7 +36,7 @@ public class DeleteCommand extends BaseRoseCommand {
                 .descriptionKey("command-delete-description")
                 .permission("rosedisplays.hologram")
                 .arguments(ArgumentsDefinition.builder()
-                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM)
+                        .required("hologram", DisplaysArgumentHandlers.HOLOGRAM_GROUP)
                         .build())
                 .build();
     }

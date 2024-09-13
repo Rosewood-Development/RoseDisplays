@@ -1,6 +1,6 @@
 package dev.rosewood.rosedisplays.argument;
 
-import dev.rosewood.rosedisplays.hologram.Hologram;
+import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.Argument;
@@ -10,20 +10,20 @@ import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import java.util.List;
 
-public class HologramArgumentHandler extends ArgumentHandler<Hologram> {
+public class HologramGroupArgumentHandler extends ArgumentHandler<HologramGroup> {
 
     private final RosePlugin rosePlugin;
 
-    public HologramArgumentHandler(RosePlugin rosePlugin) {
-        super(Hologram.class);
+    public HologramGroupArgumentHandler(RosePlugin rosePlugin) {
+        super(HologramGroup.class);
         this.rosePlugin = rosePlugin;
     }
 
     @Override
-    public Hologram handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
+    public HologramGroup handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
         String input = inputIterator.next();
 
-        Hologram hologram = this.rosePlugin.getManager(HologramManager.class).getHologram(input);
+        HologramGroup hologram = this.rosePlugin.getManager(HologramManager.class).getHologram(input);
         if (hologram == null)
             throw new HandledArgumentException("argument-handler-hologram", StringPlaceholders.of("input", input));
 
