@@ -7,8 +7,9 @@ import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.UnloadedHologramGroup;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
-import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
 import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
+import dev.rosewood.rosedisplays.hologram.view.HologramPropertyView;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import dev.rosewood.rosedisplays.model.Quaternion;
 import dev.rosewood.rosedisplays.model.Vector3;
@@ -16,12 +17,11 @@ import dev.rosewood.rosedisplays.util.ItemSerializer;
 import dev.rosewood.rosegarden.RosePlugin;
 import java.awt.Color;
 import java.lang.reflect.Array;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -215,23 +215,6 @@ public final class CustomPersistentDataType {
 
     };
 
-    public static final PersistentDataType<Long, Duration> DURATION = new PersistentDataType<>() {
-
-        public Class<Long> getPrimitiveType() { return Long.class; }
-        public Class<Duration> getComplexType() { return Duration.class; }
-
-        @Override
-        public Long toPrimitive(Duration duration, PersistentDataAdapterContext context) {
-            return duration.toMillis();
-        }
-
-        @Override
-        public Duration fromPrimitive(Long primitive, PersistentDataAdapterContext context) {
-            return Duration.ofMillis(primitive);
-        }
-
-    };
-
     public static final PersistentDataType<String, BlockData> BLOCK_DATA = new PersistentDataType<>() {
 
         public Class<String> getPrimitiveType() { return String.class; }
@@ -266,32 +249,33 @@ public final class CustomPersistentDataType {
 
     };
 
-    public static final PersistentDataType<PersistentDataContainer, HologramPropertyContainer> HOLOGRAM_PROPERTY_CONTAINER = new PersistentDataType<>() {
+    public static final PersistentDataType<PersistentDataContainer, HologramPropertyView> HOLOGRAM_PROPERTY_CONTAINER = new PersistentDataType<>() {
 
         private static final NamespacedKey KEY_TAG = KeyHelper.get("tag");
         private static final NamespacedKey KEY_SIZE = KeyHelper.get("size");
 
         public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
-        public Class<HologramPropertyContainer> getComplexType() { return HologramPropertyContainer.class; }
+        public Class<HologramPropertyView> getComplexType() { return HologramPropertyView.class; }
 
         @Override
-        public PersistentDataContainer toPrimitive(HologramPropertyContainer properties, PersistentDataAdapterContext context) {
+        public PersistentDataContainer toPrimitive(HologramPropertyView properties, PersistentDataAdapterContext context) {
             PersistentDataContainer container = context.newPersistentDataContainer();
             container.set(KEY_TAG, PersistentDataType.STRING, properties.getTag().getName());
-            container.set(KEY_SIZE, PersistentDataType.INTEGER, properties.size());
-            AtomicInteger incrementor = new AtomicInteger();
-            properties.forEach((property, value) -> {
-                int i = incrementor.getAndIncrement();
-                NamespacedKey keyKey = this.getKeyKey(i);
-                NamespacedKey valueKey = this.getValueKey(i);
+            Set<HologramProperty<?>> propertiesSet = properties.getProperties();
+            container.set(KEY_SIZE, PersistentDataType.INTEGER, propertiesSet.size());
+            int i = 0;
+            for (HologramProperty<?> property : propertiesSet) {
+                int index = i++;
+                NamespacedKey keyKey = this.getKeyKey(index);
+                NamespacedKey valueKey = this.getValueKey(index);
                 container.set(keyKey, PersistentDataType.STRING, property.getName());
-                this.forceSet(container, valueKey, property, value);
-            });
+                this.forceSet(container, valueKey, property, properties.get(property));
+            }
             return container;
         }
 
         @Override
-        public HologramPropertyContainer fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
+        public HologramPropertyView fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
             String tagString = container.get(KEY_TAG, PersistentDataType.STRING);
             Integer size = container.get(KEY_SIZE, PersistentDataType.INTEGER);
             if (tagString == null || size == null)
@@ -299,7 +283,7 @@ public final class CustomPersistentDataType {
             HologramPropertyTag tag = HologramPropertyTag.getRegistry().get(tagString);
             if (tag == null)
                 throw new IllegalArgumentException("Invalid HologramPropertyContainer, unknown HologramPropertyTag");
-            HologramPropertyContainer properties = new HologramPropertyContainer(tag);
+            HologramPropertyView properties = new DirtyingHologramPropertyView(tag);
             for (int i = 0; i < size; i++) {
                 NamespacedKey keyKey = KeyHelper.get("key-" + i);
                 NamespacedKey valueKey = KeyHelper.get("value-" + i);
@@ -317,7 +301,7 @@ public final class CustomPersistentDataType {
         }
 
         @SuppressWarnings("unchecked")
-        private <T> void forceSet(HologramPropertyContainer properties, HologramProperty<T> property, Object value) {
+        private <T> void forceSet(HologramPropertyView properties, HologramProperty<T> property, Object value) {
             properties.set(property, (T) value);
         }
 
@@ -351,13 +335,13 @@ public final class CustomPersistentDataType {
         @Override
         public Hologram fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
             String type = container.get(KEY_TYPE, PersistentDataType.STRING);
-            HologramPropertyContainer properties = container.get(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER);
-            if (type == null || properties == null)
+            HologramPropertyView properties = container.get(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER);
+            if (type == null || !(properties instanceof DirtyingHologramPropertyView dirtyingView))
                 throw new IllegalArgumentException("Invalid Hologram");
             HologramType hologramType = HologramType.getRegistry().get(type);
             if (hologramType == null)
                 throw new IllegalArgumentException("Invalid Hologram, HologramType " + type + " not found");
-            return hologramType.deserialize(hologramType, properties, container, context);
+            return hologramType.deserialize(hologramType, dirtyingView, container, context);
         }
 
     };
@@ -366,6 +350,7 @@ public final class CustomPersistentDataType {
 
         private static final NamespacedKey KEY_NAME = KeyHelper.get("name");
         private static final NamespacedKey KEY_ORIGIN = KeyHelper.get("origin");
+        private static final NamespacedKey KEY_PROPERTIES = KeyHelper.get("properties");
         private static final NamespacedKey KEY_HOLOGRAMS = KeyHelper.get("holograms");
 
         public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
@@ -376,6 +361,7 @@ public final class CustomPersistentDataType {
             PersistentDataContainer container = context.newPersistentDataContainer();
             container.set(KEY_NAME, PersistentDataType.STRING, hologramGroup.getName());
             container.set(KEY_ORIGIN, LOCATION, hologramGroup.getOrigin());
+            container.set(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER, hologramGroup.getGroupProperties());
             container.set(KEY_HOLOGRAMS, forList(HOLOGRAM), hologramGroup.getHolograms());
             return container;
         }
@@ -384,10 +370,17 @@ public final class CustomPersistentDataType {
         public HologramGroup fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
             String name = container.get(KEY_NAME, PersistentDataType.STRING);
             Location origin = container.get(KEY_ORIGIN, LOCATION);
+            HologramPropertyView properties = container.get(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER);
             List<Hologram> holograms = container.get(KEY_HOLOGRAMS, forList(HOLOGRAM));
             if (name == null || origin == null || holograms == null)
                 throw new IllegalArgumentException("Invalid HologramGroup");
-            return new HologramGroup(name, origin, holograms);
+            DirtyingHologramPropertyView dirtyingProperties;
+            if (properties instanceof DirtyingHologramPropertyView view) {
+                dirtyingProperties = view;
+            } else {
+                dirtyingProperties = new DirtyingHologramPropertyView(HologramPropertyTag.GROUP);
+            }
+            return new HologramGroup(name, origin, holograms, dirtyingProperties);
         }
 
     };

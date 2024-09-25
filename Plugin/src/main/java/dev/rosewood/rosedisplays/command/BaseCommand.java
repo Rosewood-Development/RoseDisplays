@@ -24,7 +24,8 @@ public class BaseCommand extends PrimaryCommand {
                                 new DeleteCommand(this.rosePlugin),
                                 new EditCommand(this.rosePlugin),
                                 new HelpCommand(this.rosePlugin, this, false),
-                                new ReloadCommand(this.rosePlugin)
+                                new ReloadCommand(this.rosePlugin),
+                                new TeleportCommand(this.rosePlugin)
                         ))
                 .build();
     }

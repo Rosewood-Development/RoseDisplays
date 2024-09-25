@@ -2,8 +2,9 @@ package dev.rosewood.rosedisplays.nms.v1_20_R4.mapping;
 
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
 import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
-import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
 import dev.rosewood.rosedisplays.hologram.property.MappedHologramProperty;
+import dev.rosewood.rosedisplays.hologram.view.HologramPropertyView;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
 import dev.rosewood.rosedisplays.model.ItemDisplayType;
 import dev.rosewood.rosedisplays.model.Quaternion;
@@ -121,12 +122,12 @@ public class HologramPropertyMappings {
         this.propertyMappings.put(property, mapping);
     }
 
-    private <T> void defineMask(int accessorId, EntityDataSerializer<T> entityDataSerializer, List<HologramProperty<?>> properties, Function<HologramPropertyContainer, T> transformer, T defaultValue) {
+    private <T> void defineMask(int accessorId, EntityDataSerializer<T> entityDataSerializer, List<HologramProperty<?>> properties, Function<DirtyingHologramPropertyView, T> transformer, T defaultValue) {
         if (properties.stream().anyMatch(x -> !(x instanceof MappedHologramProperty<?>)))
             throw new IllegalArgumentException("Cannot define a mask for unmapped properties");
 
         EntityDataAccessor<T> entityDataAccessor = entityDataSerializer.createAccessor(accessorId);
-        HologramPropertyMapping<HologramPropertyContainer, T> mapping = new HologramPropertyMapping<>(HologramPropertyContainer.class, entityDataAccessor, transformer, defaultValue);
+        HologramPropertyMapping<DirtyingHologramPropertyView, T> mapping = new HologramPropertyMapping<>(DirtyingHologramPropertyView.class, entityDataAccessor, transformer, defaultValue);
         this.propertyMappingMasks.put(mapping, properties);
     }
 
@@ -143,39 +144,22 @@ public class HologramPropertyMappings {
     }
 
     @SuppressWarnings("unchecked")
-    private SynchedEntityData.DataValue<?> createMaskDataValue(HologramPropertyMapping<?, ?> mapping, HologramPropertyContainer properties) {
-        return ((HologramPropertyMapping<HologramPropertyContainer, ?>) mapping).createDataValue(properties);
+    private SynchedEntityData.DataValue<?> createMaskDataValue(HologramPropertyMapping<?, ?> mapping, HologramPropertyView properties) {
+        return ((HologramPropertyMapping<HologramPropertyView, ?>) mapping).createDataValue(properties);
     }
 
-    public List<SynchedEntityData.DataValue<?>> createFreshDataValues(HologramPropertyContainer properties) {
-        return this.createDataValues(properties, true);
-    }
-
-    public List<SynchedEntityData.DataValue<?>> createDataValues(HologramPropertyContainer properties) {
-        return this.createDataValues(properties, false);
-    }
-
-    private List<SynchedEntityData.DataValue<?>> createDataValues(HologramPropertyContainer properties, boolean fresh) {
+    public List<SynchedEntityData.DataValue<?>> createDataValues(HologramPropertyView properties) {
         List<SynchedEntityData.DataValue<?>> dataValues = new ArrayList<>();
 
-        HologramPropertyContainer actingProperties;
-        if (fresh) {
-            actingProperties = properties;
-        } else {
-            actingProperties = properties.getDirty();
-        }
-
         // Create data values for normal properties
-        for (var entry : actingProperties.entrySet()) {
-            HologramProperty<?> property = entry.getKey();
+        for (HologramProperty<?> property : properties.getProperties())
             if (property instanceof MappedHologramProperty<?> && !this.maskedProperties.contains(property))
-                dataValues.add(this.createDataValue(property, entry.getValue()));
-        }
+                dataValues.add(this.createDataValue(property, properties.get(property)));
 
         // Create data values for masked properties
         this.propertyMappingMasks.forEach((mapping, maskProperties) -> {
             // Use all properties to create the mask, unmodified values still need to be present to build the full mask
-            if (maskProperties.stream().anyMatch(actingProperties::has))
+            if (maskProperties.stream().anyMatch(properties::has))
                 dataValues.add(this.createMaskDataValue(mapping, properties));
         });
 

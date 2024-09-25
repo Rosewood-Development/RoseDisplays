@@ -27,6 +27,7 @@ public class CreateCommand extends BaseRoseCommand {
         HologramManager hologramManager = this.rosePlugin.getManager(HologramManager.class);
         Player player = (Player) context.getSender();
 
+        name = name.toLowerCase();
         Hologram hologram = hologramManager.createHologram(name, type, player.getLocation().add(0, 1, 0));
         if (hologram != null) {
             localeManager.sendMessage(context.getSender(), "command-create-success", StringPlaceholders.of("name", name));

@@ -43,6 +43,10 @@ command-delete-success: '&aThe hologram named &b%name% &awas deleted.'
 command-edit-description: 'Edits an existing hologram'
 command-edit-success: '&aThe hologram named &b%name% &awas edited.'
 
+# Teleport Command
+command-teleport-description: 'Teleports you to a hologram'
+command-teleport-success: '&eYou have been teleported to &b%name%&e.'
+
 # Argument Handler Error Messages
 argument-handler-enum: '%enum% type [%input%] does not exist'
 argument-handler-enum-list: '%enum% type [%input%] does not exist. Valid types: %types%'
@@ -54,5 +58,8 @@ argument-handler-hologram-type: 'No hologram type with the name [%input%] was fo
 argument-handler-vector3: 'Vector3 value [%input%] must be 3 numbers'
 argument-handler-quaternion: 'Quaternion value [%input%] must be 4 numbers'
 argument-handler-duration: 'Duration value [%input%] must be formatted like [#(ms|s|m|h|d)] ex. 500ms or 1s500ms'
-argument-handler-blockdata: 'BlockData value [%input] is not a valid block'
-argument-handler-itemstack: 'ItemStack value [%input%] is not a valid item'
+argument-handler-blockdata: 'BlockData value [%input] is not a valid block name'
+argument-handler-blockdata-slot: 'There is no item in your [%input%] slot'
+argument-handler-blockdata-slot-block: 'The item in your %input% slot is not a block'
+argument-handler-itemstack: 'ItemStack value [%input%] is not a valid item name'
+argument-handler-itemstack-slot: 'There is no item in your [%input%] slot'

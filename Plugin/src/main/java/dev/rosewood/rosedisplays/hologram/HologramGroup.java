@@ -1,12 +1,14 @@
 package dev.rosewood.rosedisplays.hologram;
 
-import dev.rosewood.rosedisplays.config.SettingKey;
+import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
+import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -15,18 +17,24 @@ public class HologramGroup {
 
     private final String name;
     private final Location origin;
+    private final DirtyingHologramPropertyView properties;
     private final List<Hologram> holograms;
     private final Set<Player> watchers;
+    private long nextUpdateTime;
 
     public HologramGroup(String name, Location origin) {
-        this(name, origin, new ArrayList<>());
+        this(name, origin, new ArrayList<>(), new DirtyingHologramPropertyView(HologramPropertyTag.GROUP));
     }
 
-    public HologramGroup(String name, Location origin, List<Hologram> holograms) {
+    public HologramGroup(String name, Location origin, List<Hologram> holograms, DirtyingHologramPropertyView properties) {
+        if (properties.getTag() != HologramPropertyTag.GROUP)
+            throw new IllegalArgumentException("Invalid properties for hologram group");
+
         this.name = name;
         this.origin = origin;
         this.holograms = holograms;
-        this.watchers = ConcurrentHashMap.newKeySet();
+        this.watchers = new HashSet<>();
+        this.properties = properties;
     }
 
     public String getName() {
@@ -35,6 +43,10 @@ public class HologramGroup {
 
     public Location getOrigin() {
         return this.origin;
+    }
+
+    public DirtyingHologramPropertyView getGroupProperties() {
+        return this.properties;
     }
 
     public void addHologram(Hologram hologram) {
@@ -58,7 +70,7 @@ public class HologramGroup {
 
     public boolean isInRange(Player player) {
         Location location = this.getOrigin();
-        int maxDistance = SettingKey.HOLOGRAM_RENDER_DISTANCE.get();
+        int maxDistance = this.properties.getOrDefault(HologramProperties.RENDER_DISTANCE);
         return player.getWorld().equals(location.getWorld()) && location.distanceSquared(player.getLocation()) <= maxDistance * maxDistance;
     }
 
@@ -119,10 +131,13 @@ public class HologramGroup {
      * Updates the group and all holograms within it.
      */
     public void update() {
-        Set<Player> unmodifiableWatchers = Collections.unmodifiableSet(this.watchers);
-        for (Hologram hologram : this.holograms) {
-            Location location = this.origin.clone();
-            hologram.update(location, unmodifiableWatchers);
+        if (System.currentTimeMillis() >= this.nextUpdateTime) {
+            Set<Player> unmodifiableWatchers = Collections.unmodifiableSet(this.watchers);
+            for (Hologram hologram : this.holograms) {
+                Location location = this.origin.clone();
+                hologram.update(location, unmodifiableWatchers);
+            }
+            this.nextUpdateTime = System.currentTimeMillis() + this.properties.getOrDefault(HologramProperties.UPDATE_INTERVAL);
         }
     }
 

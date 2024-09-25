@@ -1,6 +1,7 @@
 package dev.rosewood.rosedisplays.hologram;
 
-import dev.rosewood.rosedisplays.hologram.property.HologramPropertyContainer;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
+import dev.rosewood.rosedisplays.hologram.view.HologramPropertyView;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -10,14 +11,14 @@ import org.bukkit.persistence.PersistentDataContainer;
 public abstract class Hologram {
 
     protected final HologramType type;
-    protected final HologramPropertyContainer properties;
+    protected final DirtyingHologramPropertyView properties;
 
     public Hologram(HologramType type) {
         this.type = type;
-        this.properties = new HologramPropertyContainer(type.tag());
+        this.properties = new DirtyingHologramPropertyView(type.tag());
     }
 
-    public Hologram(HologramType type, HologramPropertyContainer properties, PersistentDataContainer container, PersistentDataAdapterContext context) {
+    public Hologram(HologramType type, DirtyingHologramPropertyView properties, PersistentDataContainer container, PersistentDataAdapterContext context) {
         if (!properties.getTag().equals(type.tag()))
             throw new IllegalArgumentException("Invalid properties for the given hologram type");
 
@@ -30,7 +31,7 @@ public abstract class Hologram {
         return this.type;
     }
 
-    public HologramPropertyContainer getProperties() {
+    public HologramPropertyView getProperties() {
         return this.properties;
     }
 

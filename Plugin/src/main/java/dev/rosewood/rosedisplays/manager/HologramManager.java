@@ -13,6 +13,7 @@ import dev.rosewood.rosedisplays.hologram.UnloadedHologramGroup;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import dev.rosewood.rosegarden.scheduler.task.ScheduledTask;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,6 +40,9 @@ public class HologramManager extends Manager implements Listener {
     private final ListMultimap<ChunkLocation, HologramGroup> loadedHolograms;
     private final ListMultimap<ChunkLocation, UnloadedHologramGroup> unloadedHolograms;
     private final Map<ChunkLocation, Long> chunkTickets;
+    private ScheduledTask tickTask;
+    private ScheduledTask chunkTicketTask;
+    private transient boolean ticking = false;
 
     public HologramManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -48,17 +52,28 @@ public class HologramManager extends Manager implements Listener {
         this.chunkTickets = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, rosePlugin);
-        this.rosePlugin.getScheduler().runTaskTimerAsync(this::tick, 0L, SettingKey.HOLOGRAM_UPDATE_FREQUENCY.get());
-        this.rosePlugin.getScheduler().runTaskTimer(this::checkChunkTickets, 0L, 20L);
     }
 
     @Override
     public void reload() {
+        this.tickTask = this.rosePlugin.getScheduler().runTaskTimerAsync(this::tick, 0L, SettingKey.HOLOGRAM_UPDATE_FREQUENCY.get());
+        this.chunkTicketTask = this.rosePlugin.getScheduler().runTaskTimer(this::checkChunkTickets, 0L, 20L);
+
         Bukkit.getWorlds().forEach(this::loadWorldHolograms);
     }
 
     @Override
     public void disable() {
+        if (this.tickTask != null) {
+            this.tickTask.cancel();
+            this.tickTask = null;
+        }
+
+        if (this.chunkTicketTask != null) {
+            this.chunkTicketTask.cancel();
+            this.chunkTicketTask = null;
+        }
+
         Bukkit.getWorlds().forEach(this::unloadWorldHolograms);
 
         this.loadedHolograms.clear();
@@ -66,23 +81,31 @@ public class HologramManager extends Manager implements Listener {
     }
 
     private void tick() {
-        Multimap<UUID, Player> playersPerWorld = MultimapBuilder.hashKeys().hashSetValues().build();
-        for (Player player : Bukkit.getOnlinePlayers())
-            playersPerWorld.put(player.getWorld().getUID(), player);
+        if (this.ticking)
+            return;
 
-        for (HologramGroup group : this.loadedHolograms.values()) {
-            if (group.shouldKeepWatchersInSync()) {
-                for (Player player : playersPerWorld.get(group.getOrigin().getWorld().getUID())) {
-                    boolean watching = group.isWatching(player);
-                    boolean inRange = group.isInRange(player);
-                    if (inRange && !watching) {
-                        group.addWatcher(player);
-                    } else if (!inRange && watching) {
-                        group.removeWatcher(player);
+        this.ticking = true;
+        try {
+            Multimap<UUID, Player> playersPerWorld = MultimapBuilder.hashKeys().hashSetValues().build();
+            for (Player player : Bukkit.getOnlinePlayers())
+                playersPerWorld.put(player.getWorld().getUID(), player);
+
+            for (HologramGroup group : this.loadedHolograms.values()) {
+                if (group.shouldKeepWatchersInSync()) {
+                    for (Player player : playersPerWorld.get(group.getOrigin().getWorld().getUID())) {
+                        boolean watching = group.isWatching(player);
+                        boolean inRange = group.isInRange(player);
+                        if (inRange && !watching) {
+                            group.addWatcher(player);
+                        } else if (!inRange && watching) {
+                            group.removeWatcher(player);
+                        }
                     }
                 }
+                group.update();
             }
-            group.update();
+        } finally {
+            this.ticking = false;
         }
     }
 
@@ -111,6 +134,10 @@ public class HologramManager extends Manager implements Listener {
     public Hologram createHologram(String name, HologramType type, Location location) {
         if (this.getHologramNames().contains(name.toLowerCase()))
             return null;
+
+        location = location.clone();
+        location.setYaw(0);
+        location.setPitch(0);
 
         HologramGroup group = new HologramGroup(name, location);
         Hologram hologram = type.create();

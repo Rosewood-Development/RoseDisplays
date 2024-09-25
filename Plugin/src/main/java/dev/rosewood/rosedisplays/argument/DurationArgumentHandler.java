@@ -6,24 +6,23 @@ import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
 import dev.rosewood.rosegarden.command.framework.InputIterator;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import java.time.Duration;
 import java.util.List;
 
-public class DurationArgumentHandler extends ArgumentHandler<Duration> {
+public class DurationArgumentHandler extends ArgumentHandler<Long> {
 
     public DurationArgumentHandler() {
-        super(Duration.class);
+        super(Long.class);
     }
 
     @Override
-    public Duration handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
+    public Long handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
         String input = inputIterator.next();
 
         long duration = TimeUtils.getDuration(input);
         if (duration == -1)
             throw new HandledArgumentException("argument-handler-duration", StringPlaceholders.of("input", input));
 
-        return Duration.ofMillis(duration);
+        return duration;
     }
 
     @Override

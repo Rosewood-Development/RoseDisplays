@@ -86,4 +86,19 @@ public final class TimeUtils {
         return builder.toString();
     }
 
+    public static String getTimeString(long duration) {
+        long days = TimeUnit.MILLISECONDS.toDays(duration);
+        long hours = TimeUnit.MILLISECONDS.toHours(duration) % 24;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration) % 60;
+        long milliseconds = duration % 1000;
+        StringBuilder builder = new StringBuilder();
+        if (milliseconds > 0) builder.append(milliseconds).append("ms");
+        if (seconds > 0) builder.append(seconds).append("s");
+        if (minutes > 0) builder.append(minutes).append("m");
+        if (hours > 0) builder.append(hours).append("h");
+        if (days > 0) builder.append(days).append("d");
+        return builder.toString();
+    }
+
 }

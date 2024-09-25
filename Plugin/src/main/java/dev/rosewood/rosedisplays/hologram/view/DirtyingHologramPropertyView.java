@@ -1,6 +1,7 @@
-package dev.rosewood.rosedisplays.hologram.property;
+package dev.rosewood.rosedisplays.hologram.view;
 
-import java.util.Collections;
+import dev.rosewood.rosedisplays.hologram.property.HologramProperty;
+import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,51 +10,37 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.ApiStatus;
 
-public final class HologramPropertyContainer {
+public final class DirtyingHologramPropertyView implements HologramPropertyView {
 
     private final HologramPropertyTag tag;
     private final Map<HologramProperty<?>, Object> properties;
     private final Set<HologramProperty<?>> dirtyProperties;
 
-    public HologramPropertyContainer(HologramPropertyTag tag) {
+    public DirtyingHologramPropertyView(HologramPropertyTag tag) {
         this.tag = tag;
         this.properties = new HashMap<>();
         this.dirtyProperties = new HashSet<>();
     }
 
-    public HologramPropertyContainer(HologramPropertyTag tag, Map<HologramProperty<?>, Object> properties) {
+    public DirtyingHologramPropertyView(HologramPropertyTag tag, Map<HologramProperty<?>, Object> properties) {
         this.tag = tag;
         this.properties = properties.entrySet().stream()
                 .filter(x -> tag.contains(x.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, HashMap::new));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y));
         this.dirtyProperties = new HashSet<>();
     }
 
-    /**
-     * @return the HologramPropertyTag of HologramProperties that this container is capable of holding
-     */
+    @Override
     public HologramPropertyTag getTag() {
         return this.tag;
     }
 
-    /**
-     * Gets a HologramProperty value or null if it isn't set.
-     *
-     * @param property The HologramProperty to get the value of
-     * @return The HologramProperty value or null if it isn't set
-     * @param <T> The HologramProperty value type
-     */
+    @Override
     public <T> T get(HologramProperty<T> property) {
         return property.getValueType().cast(this.properties.get(property));
     }
 
-    /**
-     * Sets a HologramProperty value, overwrites the existing value.
-     *
-     * @param property The HologramProperty to set the value of
-     * @param value The value to set
-     * @throws IllegalArgumentException if the property is not applicable for this hologram
-     */
+    @Override
     public <T> void set(HologramProperty<T> property, T value) {
         if (!this.tag.contains(property))
             throw new IllegalArgumentException("HologramProperty " + property.getName() + " is not applicable");
@@ -61,24 +48,20 @@ public final class HologramPropertyContainer {
         this.dirtyProperties.add(property);
     }
 
-    /**
-     * Unsets a HologramProperty value and returns it to its default value.
-     *
-     * @param property The HologramProperty to unset the value of
-     */
+    @Override
     public void unset(HologramProperty<?> property) {
         this.properties.remove(property);
         this.dirtyProperties.add(property);
     }
 
-    /**
-     * Checks if a HologramProperty is set.
-     *
-     * @param property The HologramProperty to check for
-     * @return true if the HologramProperty exists, false otherwise
-     */
+    @Override
     public boolean has(HologramProperty<?> property) {
         return this.properties.containsKey(property);
+    }
+
+    @Override
+    public Set<HologramProperty<?>> getProperties() {
+        return this.properties.keySet();
     }
 
     /**
@@ -90,15 +73,15 @@ public final class HologramPropertyContainer {
     }
 
     /**
-     * Gets a copy of this HologramPropertyContainer with dirty properties still present.
-     *
-     * @return a copy of this HologramPropertyContainer with dirty properties still present
+     * @return a view of this DirtyingHologramPropertyView with dirty properties still present but set to null
      */
     @ApiStatus.Internal
-    public HologramPropertyContainer getDirty() {
-        HologramPropertyContainer copy = this.copy();
-        copy.dirtyProperties.addAll(this.dirtyProperties);
-        return copy;
+    public HologramPropertyView getDirty() {
+        Map<HologramProperty<?>, Object> propertiesMap = new HashMap<>(this.properties);
+        for (HologramProperty<?> dirtyProperty : this.dirtyProperties)
+            if (!propertiesMap.containsKey(dirtyProperty))
+                propertiesMap.put(dirtyProperty, null);
+        return new UnmodifiableHologramPropertyView(this.tag, propertiesMap);
     }
 
     /**
@@ -110,24 +93,10 @@ public final class HologramPropertyContainer {
     }
 
     /**
-     * @return a copy of this HologramPropertyContainer
-     */
-    public HologramPropertyContainer copy() {
-        return new HologramPropertyContainer(this.tag, this.properties);
-    }
-
-    /**
      * @return the amount of HologramProperties stored within
      */
     public int size() {
         return this.properties.size();
-    }
-
-    /**
-     * @return a map entry set of HologramProperties and their values
-     */
-    public Set<Map.Entry<HologramProperty<?>, Object>> entrySet() {
-        return Collections.unmodifiableSet(this.properties.entrySet());
     }
 
     /**

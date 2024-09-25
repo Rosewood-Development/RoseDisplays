@@ -3,6 +3,7 @@ package dev.rosewood.rosedisplays.nms;
 import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 /**
@@ -13,18 +14,18 @@ import org.bukkit.entity.Player;
  */
 public interface NMSHandler {
 
-    // DisplayEntityHologram, Location, Collection<Player>
+    // int entityId, HologramPropertyView, EntityType, Location, Collection<Player>
     // Also sends a metadata packet
-    void sendEntitySpawnPacket(Object hologramArg, Location location, Collection<Player> players);
+    void sendEntitySpawnPacket(int entityId, Object hologramArg, EntityType entityType, Location location, Collection<Player> players);
 
-    // DisplayEntityHologram, Collection<Player>
-    void sendEntityMetadataPacket(Object hologramArg, Collection<Player> players);
+    // int entityId, HologramPropertyView, Collection<Player>
+    void sendEntityMetadataPacket(int entityId, Object hologramArg, Collection<Player> players);
 
-    // DisplayEntityHologram, Collection<Player>
-    void sendEntityDespawnPacket(Object hologramArg, Collection<Player> players);
+    // int entityId, Collection<Player>
+    void sendEntityDespawnPacket(int entityId, Collection<Player> players);
 
-    // DisplayEntityHologram, Entity, Collection<Player>
-    default void sendHologramSetVehiclePacket(Object hologramArg, Entity vehicle, Collection<Player> players) {
+    // int entityId, Entity, Collection<Player>
+    default void sendHologramSetVehiclePacket(int entityId, Entity vehicle, Collection<Player> players) {
 
     }
 

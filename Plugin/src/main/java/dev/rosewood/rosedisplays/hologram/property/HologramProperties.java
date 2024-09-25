@@ -12,7 +12,6 @@ import dev.rosewood.rosedisplays.nms.NMSHandler;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import java.awt.Color;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,10 +24,14 @@ public final class HologramProperties {
     private static final Set<HologramProperty<?>> KNOWN_PROPERTIES = new HashSet<>();
     private static final Set<HologramProperty<?>> AVAILABLE_PROPERTIES = new HashSet<>();
 
-    // All
+    // Hologram Group
+    public static final HologramProperty<Long> UPDATE_INTERVAL = create("update_interval", DisplaysArgumentHandlers.DURATION, PersistentDataType.LONG);
+    public static final HologramProperty<Integer> RENDER_DISTANCE = create("render_distance", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 1, 1024), PersistentDataType.INTEGER);
+
+    // Display Entity
     public static final HologramProperty<Boolean> GLOWING = createMapped("glowing", ArgumentHandlers.BOOLEAN, PersistentDataType.BOOLEAN);
-    public static final HologramProperty<Integer> INTERPOLATION_DELAY = createMapped("interpolation_delay", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE), PersistentDataType.INTEGER);
-    public static final HologramProperty<Integer> INTERPOLATION_DURATION = createMapped("interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE), PersistentDataType.INTEGER);
+    public static final HologramProperty<Integer> INTERPOLATION_DELAY = createMapped("interpolation_delay", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 60 * 60 * 20), PersistentDataType.INTEGER);
+    public static final HologramProperty<Integer> INTERPOLATION_DURATION = createMapped("interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, 60 * 60 * 20), PersistentDataType.INTEGER);
     public static final HologramProperty<Integer> TRANSFORMATION_INTERPOLATION_DURATION = createMapped("transformation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE), PersistentDataType.INTEGER);
     public static final HologramProperty<Integer> POSITION_ROTATION_INTERPOLATION_DURATION = createMapped("position_rotation_interpolation_duration", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 0, Integer.MAX_VALUE), PersistentDataType.INTEGER);
     public static final HologramProperty<Vector3> TRANSLATION = createMapped("translation", DisplaysArgumentHandlers.VECTOR3, CustomPersistentDataType.VECTOR3);
@@ -55,8 +58,7 @@ public final class HologramProperties {
     public static final HologramProperty<Boolean> USE_DEFAULT_BACKGROUND_COLOR = createMapped("use_default_background_color", ArgumentHandlers.BOOLEAN, PersistentDataType.BOOLEAN);
     public static final HologramProperty<TextDisplayAlignment> ALIGNMENT = createMapped("alignment", ArgumentHandlers.forEnum(TextDisplayAlignment.class), CustomPersistentDataType.forEnum(TextDisplayAlignment.class));
     // Custom Text Display
-    public static final HologramProperty<Duration> TEXT_UPDATE_INTERVAL = create("text_update_interval", DisplaysArgumentHandlers.DURATION, CustomPersistentDataType.DURATION);
-    public static final HologramProperty<Duration> PLACEHOLDER_UPDATE_INTERVAL = create("placeholder_update_interval", DisplaysArgumentHandlers.DURATION, CustomPersistentDataType.DURATION);
+    public static final HologramProperty<Long> PLACEHOLDER_UPDATE_INTERVAL = create("placeholder_update_interval", DisplaysArgumentHandlers.DURATION, PersistentDataType.LONG);
 
     // Item Display
     public static final HologramProperty<ItemStack> ITEM = createMapped("item", DisplaysArgumentHandlers.ITEMSTACK, CustomPersistentDataType.ITEMSTACK);
@@ -78,13 +80,15 @@ public final class HologramProperties {
 
     private static <T> HologramProperty<T> create(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
         HologramProperty<T> property = new HologramProperty<>(name, argumentHandler, persistentDataType);
-        KNOWN_PROPERTIES.add(property);
+        if (!KNOWN_PROPERTIES.add(property))
+            throw new IllegalArgumentException("HologramProperty " + name + " already exists");
         return property;
     }
 
     private static <T> MappedHologramProperty<T> createMapped(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
         MappedHologramProperty<T> property = new MappedHologramProperty<>(name, argumentHandler, persistentDataType);
-        KNOWN_PROPERTIES.add(property);
+        if (!KNOWN_PROPERTIES.add(property))
+            throw new IllegalArgumentException("HologramProperty " + name + " already exists");
         return property;
     }
 

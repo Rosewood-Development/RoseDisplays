@@ -18,7 +18,7 @@ public class BlockDataArgumentHandler extends ArgumentHandler<BlockData> {
     private static final Map<String, Material> BLOCKS = Arrays.stream(Material.values())
             .filter(Material::isBlock)
             .collect(Collectors.toUnmodifiableMap(x -> x.getKey().getKey(), Function.identity()));
-    private static final List<String> BLOCKS_NAMES = List.copyOf(BLOCKS.keySet());
+    private static final List<String> BLOCK_NAMES = List.copyOf(BLOCKS.keySet());
 
     public BlockDataArgumentHandler() {
         super(BlockData.class);
@@ -28,16 +28,18 @@ public class BlockDataArgumentHandler extends ArgumentHandler<BlockData> {
     public BlockData handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
         String input = inputIterator.next();
 
+        int bracketIndex = input.indexOf("[");
+
         Material material = BLOCKS.get(input.toLowerCase());
         if (material == null)
             throw new HandledArgumentException("argument-handler-blockdata", StringPlaceholders.of("input", input));
 
-        return material.createBlockData();
+        return material.createBlockData("");
     }
 
     @Override
     public List<String> suggest(CommandContext context, Argument argument, String[] args) {
-        return BLOCKS_NAMES;
+        return BLOCK_NAMES;
     }
 
 }

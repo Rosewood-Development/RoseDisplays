@@ -15,6 +15,9 @@ public final class HologramPropertyTag implements Iterable<HologramProperty<?>> 
 
     private static final Map<String, HologramPropertyTag> REGISTRY = new HashMap<>();
 
+    public static final HologramPropertyTag GROUP = builder("group")
+            .add(RENDER_DISTANCE)
+            .build();
     public static final HologramPropertyTag DISPLAY_ENTITY = builder("display_entity")
             .add(GLOWING, INTERPOLATION_DELAY, INTERPOLATION_DURATION, TRANSFORMATION_INTERPOLATION_DURATION,
                     POSITION_ROTATION_INTERPOLATION_DURATION, TRANSLATION, SCALE, ROTATION_LEFT, ROTATION_RIGHT,
@@ -25,7 +28,7 @@ public final class HologramPropertyTag implements Iterable<HologramProperty<?>> 
             .inherit(DISPLAY_ENTITY)
             .add(TEXT, LINE_WIDTH, BACKGROUND_COLOR, TEXT_OPACITY, HAS_SHADOW, SEE_THROUGH,
                     USE_DEFAULT_BACKGROUND_COLOR, ALIGNMENT)
-            .add(TEXT_UPDATE_INTERVAL, PLACEHOLDER_UPDATE_INTERVAL)
+            .add(PLACEHOLDER_UPDATE_INTERVAL)
             .build();
     public static final HologramPropertyTag ITEM_DISPLAY_ENTITY = builder("item_display_entity")
             .inherit(DISPLAY_ENTITY)

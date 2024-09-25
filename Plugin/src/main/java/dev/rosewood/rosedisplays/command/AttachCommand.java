@@ -2,6 +2,7 @@ package dev.rosewood.rosedisplays.command;
 
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.hologram.HologramGroup;
+import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
@@ -26,8 +27,10 @@ public class AttachCommand extends BaseRoseCommand {
         if (player == null)
             player = (Player) context.getSender();
 
-        NMSAdapter.getHandler().sendHologramSetVehiclePacket(hologram, player, List.of(player));
-        this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-attach-success", StringPlaceholders.of("name", hologram.getName(), "player", player.getName()));
+        if (hologram.getHolograms().get(0) instanceof DisplayEntityHologram displayEntityHologram) {
+            NMSAdapter.getHandler().sendHologramSetVehiclePacket(displayEntityHologram.getEntityId(), player, List.of(player));
+            this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-attach-success", StringPlaceholders.of("name", hologram.getName(), "player", player.getName()));
+        }
     }
 
     @Override
