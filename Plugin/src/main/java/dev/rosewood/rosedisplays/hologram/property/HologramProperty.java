@@ -1,23 +1,25 @@
 package dev.rosewood.rosedisplays.hologram.property;
 
+import dev.rosewood.rosegarden.registry.RoseKey;
+import dev.rosewood.rosegarden.registry.RoseKeyed;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import java.util.Objects;
 import org.bukkit.persistence.PersistentDataType;
 
-public sealed class HologramProperty<T> permits MappedHologramProperty {
+public sealed class HologramProperty<T> implements RoseKeyed permits MappedHologramProperty {
 
-    private final String name;
+    private final RoseKey key;
     private final ArgumentHandler<T> argumentHandler;
     private final PersistentDataType<?, T> persistentDataType;
 
-    HologramProperty(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
-        this.name = name;
+    HologramProperty(RoseKey key, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
+        this.key = key;
         this.argumentHandler = argumentHandler;
         this.persistentDataType = persistentDataType;
     }
 
-    public String getName() {
-        return this.name;
+    public RoseKey key() {
+        return this.key;
     }
 
     public ArgumentHandler<T> getArgumentHandler() {
@@ -37,18 +39,18 @@ public sealed class HologramProperty<T> permits MappedHologramProperty {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
         HologramProperty<?> that = (HologramProperty<?>) obj;
-        return Objects.equals(this.name, that.name);
+        return Objects.equals(this.key, that.key);
     }
 
     @Override
     public int hashCode() {
-        return this.name.hashCode();
+        return this.key.hashCode();
     }
 
     @Override
     public String toString() {
         return "HologramProperty[" +
-                "name=" + this.name + ", " +
+                "key=" + this.key + ", " +
                 "type=" + this.getValueType() +
                 "]";
     }

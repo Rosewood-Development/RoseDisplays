@@ -28,7 +28,7 @@ public final class SettingKey {
     public static final RoseSetting<Long> DEFAULT_PROPERTY_VALUE_PLACEHOLDER_UPDATE_INTERVAL = create(HologramProperties.PLACEHOLDER_UPDATE_INTERVAL, DURATION, 500L, "The amount of time between placeholder updates", "Useful for animated colors, formatted as a time string", TIME_STRING_EXAMPLE);
 
     private static <T> RoseSetting<T> create(HologramProperty<T> property, RoseSettingSerializer<T> serializer, T defaultValue, String... comments) {
-        String key = DEFAULT_KEY + "." + property.getName();
+        String key = DEFAULT_KEY + "." + property.key();
         RoseSetting<T> setting = RoseSetting.backed(RoseDisplays.getInstance(), key, serializer, defaultValue, comments);
         DEFAULT_PROPERTY_VALUES_MAP.put(property, setting);
         KEYS.add(setting);

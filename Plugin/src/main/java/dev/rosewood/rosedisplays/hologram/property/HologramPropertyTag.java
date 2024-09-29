@@ -1,22 +1,22 @@
 package dev.rosewood.rosedisplays.hologram.property;
 
+import dev.rosewood.rosegarden.registry.RoseKey;
+import dev.rosewood.rosegarden.registry.RoseKeyed;
+import dev.rosewood.rosegarden.registry.RoseRegistry;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import static dev.rosewood.rosedisplays.hologram.property.HologramProperties.*;
 
-public final class HologramPropertyTag implements Iterable<HologramProperty<?>> {
+public final class HologramPropertyTag implements RoseKeyed, Iterable<HologramProperty<?>> {
 
-    private static final Map<String, HologramPropertyTag> REGISTRY = new HashMap<>();
+    public static final RoseRegistry<HologramPropertyTag> REGISTRY = RoseRegistry.create(HologramPropertyTag.class);
 
     public static final HologramPropertyTag GROUP = builder("group")
-            .add(RENDER_DISTANCE)
+            .add(UPDATE_INTERVAL, RENDER_DISTANCE, HOLOGRAM_SORTING)
             .build();
     public static final HologramPropertyTag DISPLAY_ENTITY = builder("display_entity")
             .add(GLOWING, INTERPOLATION_DELAY, INTERPOLATION_DURATION, TRANSFORMATION_INTERPOLATION_DURATION,
@@ -39,16 +39,17 @@ public final class HologramPropertyTag implements Iterable<HologramProperty<?>> 
             .add(BLOCK_DATA)
             .build();
 
-    private final String name;
+    private final RoseKey key;
     private final Set<HologramProperty<?>> properties;
 
-    private HologramPropertyTag(String name, Set<HologramProperty<?>> properties) {
-        this.name = name;
+    private HologramPropertyTag(RoseKey key, Set<HologramProperty<?>> properties) {
+        this.key = key;
         this.properties = properties;
     }
 
-    public String getName() {
-        return this.name;
+    @Override
+    public RoseKey key() {
+        return this.key;
     }
 
     public boolean contains(HologramProperty<?> property) {
@@ -64,10 +65,6 @@ public final class HologramPropertyTag implements Iterable<HologramProperty<?>> 
 
     public Stream<HologramProperty<?>> stream() {
         return this.properties.stream();
-    }
-
-    public static Map<String, HologramPropertyTag> getRegistry() {
-        return Collections.unmodifiableMap(REGISTRY);
     }
 
     public static Builder builder(String name) {
@@ -100,8 +97,8 @@ public final class HologramPropertyTag implements Iterable<HologramProperty<?>> 
         }
 
         public HologramPropertyTag build() {
-            HologramPropertyTag tag = new HologramPropertyTag(this.name, this.properties);
-            REGISTRY.put(this.name, tag);
+            HologramPropertyTag tag = new HologramPropertyTag(RoseKey.of(this.name), this.properties);
+            REGISTRY.register(tag);
             return tag;
         }
 

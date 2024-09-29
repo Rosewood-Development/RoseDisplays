@@ -1,9 +1,12 @@
 package dev.rosewood.rosedisplays.hologram;
 
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
-import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
 import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
+import dev.rosewood.rosedisplays.model.HologramGroupSorting;
+import dev.rosewood.rosegarden.registry.RoseKey;
+import dev.rosewood.rosegarden.registry.RoseKeyed;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,32 +16,33 @@ import java.util.function.BiConsumer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class HologramGroup {
+public class HologramGroup implements RoseKeyed {
 
-    private final String name;
+    private final RoseKey key;
     private final Location origin;
     private final DirtyingHologramPropertyView properties;
     private final List<Hologram> holograms;
     private final Set<Player> watchers;
     private long nextUpdateTime;
 
-    public HologramGroup(String name, Location origin) {
-        this(name, origin, new ArrayList<>(), new DirtyingHologramPropertyView(HologramPropertyTag.GROUP));
+    public HologramGroup(RoseKey key, Location origin) {
+        this(key, origin, new ArrayList<>(), new DirtyingHologramPropertyView(HologramPropertyTag.GROUP));
     }
 
-    public HologramGroup(String name, Location origin, List<Hologram> holograms, DirtyingHologramPropertyView properties) {
+    public HologramGroup(RoseKey key, Location origin, List<Hologram> holograms, DirtyingHologramPropertyView properties) {
         if (properties.getTag() != HologramPropertyTag.GROUP)
             throw new IllegalArgumentException("Invalid properties for hologram group");
 
-        this.name = name;
+        this.key = key;
         this.origin = origin;
         this.holograms = holograms;
         this.watchers = new HashSet<>();
         this.properties = properties;
     }
 
-    public String getName() {
-        return this.name;
+    @Override
+    public RoseKey key() {
+        return this.key;
     }
 
     public Location getOrigin() {
@@ -79,7 +83,7 @@ public class HologramGroup {
     }
 
     public UnloadedHologramGroup asUnloaded() {
-        return new UnloadedHologramGroup(this.name, this.getChunkLocation());
+        return new UnloadedHologramGroup(this.key, this.getChunkLocation());
     }
 
     /**
@@ -133,12 +137,21 @@ public class HologramGroup {
     public void update() {
         if (System.currentTimeMillis() >= this.nextUpdateTime) {
             Set<Player> unmodifiableWatchers = Collections.unmodifiableSet(this.watchers);
+            int index = 0;
+            int total = this.holograms.size();
+            HologramGroupSorting sorting = this.properties.getOrDefault(HologramProperties.HOLOGRAM_SORTING, HologramGroupSorting.ORIGIN);
             for (Hologram hologram : this.holograms) {
-                Location location = this.origin.clone();
+                Location location = this.calculateLocation(sorting, index++, total);
                 hologram.update(location, unmodifiableWatchers);
             }
             this.nextUpdateTime = System.currentTimeMillis() + this.properties.getOrDefault(HologramProperties.UPDATE_INTERVAL);
         }
+    }
+
+    private Location calculateLocation(HologramGroupSorting sorting, int index, int total) {
+        return switch (sorting) {
+            case ORIGIN -> this.origin.clone();
+        };
     }
 
     /**

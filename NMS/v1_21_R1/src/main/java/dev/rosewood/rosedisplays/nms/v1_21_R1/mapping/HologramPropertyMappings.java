@@ -138,7 +138,7 @@ public class HologramPropertyMappings {
     private <T> SynchedEntityData.DataValue<?> createDataValue(HologramProperty<T> property, Object value) {
         HologramPropertyMapping<?, ?> mapping = this.propertyMappings.get(property);
         if (mapping == null)
-            throw new IllegalArgumentException("Unknown property " + property.getName() + "!");
+            throw new IllegalArgumentException("Unknown property " + property.key() + "!");
 
         if (value != null && !mapping.inputPropertyType().isAssignableFrom(value.getClass()))
             throw new IllegalArgumentException("Value type " + value.getClass().getName() + " does not match property type " + mapping.inputPropertyType() + "!");

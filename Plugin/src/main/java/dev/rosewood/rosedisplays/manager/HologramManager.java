@@ -11,6 +11,7 @@ import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.UnloadedHologramGroup;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
+import dev.rosewood.rosegarden.registry.RoseKey;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.scheduler.task.ScheduledTask;
@@ -132,22 +133,23 @@ public class HologramManager extends Manager implements Listener {
     }
 
     public Hologram createHologram(String name, HologramType type, Location location) {
-        if (this.getHologramNames().contains(name.toLowerCase()))
+        name = name.toLowerCase();
+        if (this.getHologramNames().contains(name))
             return null;
 
         location = location.clone();
         location.setYaw(0);
         location.setPitch(0);
 
-        HologramGroup group = new HologramGroup(name, location);
+        HologramGroup group = new HologramGroup(RoseKey.of(name), location);
         Hologram hologram = type.create();
         group.addHologram(hologram);
         this.loadedHolograms.put(ChunkLocation.of(location), group);
         return hologram;
     }
 
-    public boolean deleteHologram(String name) {
-        HologramGroup hologram = this.getHologram(name);
+    public boolean deleteHologram(RoseKey key) {
+        HologramGroup hologram = this.getHologram(key);
         if (hologram == null)
             return false;
 
@@ -168,13 +170,13 @@ public class HologramManager extends Manager implements Listener {
     /**
      * Gets a hologram by its name, loading the chunk it's in if needed.
      *
-     * @param name The name of the hologram to get
+     * @param key The key of the hologram to get
      * @return The hologram or null or one with that name did not exist
      */
-    public HologramGroup getHologram(String name) {
+    public HologramGroup getHologram(RoseKey key) {
         // Search loaded holograms first
         HologramGroup hologram = this.loadedHolograms.values().stream()
-                .filter(x -> x.getName().equalsIgnoreCase(name))
+                .filter(x -> x.key().equals(key))
                 .findFirst()
                 .orElse(null);
         if (hologram != null)
@@ -182,7 +184,7 @@ public class HologramManager extends Manager implements Listener {
 
         // Search unloaded holograms
         UnloadedHologramGroup unloadedHologram = this.unloadedHolograms.values().stream()
-                .filter(x -> x.name().equalsIgnoreCase(name))
+                .filter(x -> x.key().equals(key))
                 .findFirst()
                 .orElse(null);
         if (unloadedHologram == null)
@@ -200,19 +202,19 @@ public class HologramManager extends Manager implements Listener {
         this.loadHolograms(chunk);
 
         hologram = this.loadedHolograms.values().stream()
-                .filter(x -> x.getName().equalsIgnoreCase(name))
+                .filter(x -> x.key().equals(key))
                 .findFirst()
                 .orElse(null);
         if (hologram == null)
-            this.rosePlugin.getLogger().warning("A hologram with the name " + name + " was expected to be loaded but was not");
+            this.rosePlugin.getLogger().warning("A hologram with the name " + key + " was expected to be loaded but was not");
 
         return hologram;
     }
 
     public List<String> getHologramNames() {
         List<String> names = new ArrayList<>();
-        this.loadedHolograms.values().forEach(hologram -> names.add(hologram.getName()));
-        this.unloadedHolograms.values().forEach(hologram -> names.add(hologram.name()));
+        this.loadedHolograms.values().forEach(hologram -> names.add(hologram.key().toString()));
+        this.unloadedHolograms.values().forEach(hologram -> names.add(hologram.key().toString()));
         return names;
     }
 

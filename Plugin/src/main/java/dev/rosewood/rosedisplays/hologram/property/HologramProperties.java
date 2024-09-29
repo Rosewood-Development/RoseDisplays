@@ -3,16 +3,18 @@ package dev.rosewood.rosedisplays.hologram.property;
 import dev.rosewood.rosedisplays.argument.DisplaysArgumentHandlers;
 import dev.rosewood.rosedisplays.datatype.CustomPersistentDataType;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
+import dev.rosewood.rosedisplays.model.HologramGroupSorting;
 import dev.rosewood.rosedisplays.model.ItemDisplayType;
 import dev.rosewood.rosedisplays.model.Quaternion;
 import dev.rosewood.rosedisplays.model.TextDisplayAlignment;
 import dev.rosewood.rosedisplays.model.Vector3;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
+import dev.rosewood.rosegarden.registry.RoseKey;
+import dev.rosewood.rosegarden.registry.RoseRegistry;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
 import java.awt.Color;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.bukkit.block.data.BlockData;
@@ -21,12 +23,14 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class HologramProperties {
 
-    private static final Set<HologramProperty<?>> KNOWN_PROPERTIES = new HashSet<>();
+    @SuppressWarnings("unchecked")
+    public static final RoseRegistry<HologramProperty<?>> REGISTRY = RoseRegistry.create((Class<HologramProperty<?>>) (Class<?>) HologramProperty.class);
     private static final Set<HologramProperty<?>> AVAILABLE_PROPERTIES = new HashSet<>();
 
     // Hologram Group
     public static final HologramProperty<Long> UPDATE_INTERVAL = create("update_interval", DisplaysArgumentHandlers.DURATION, PersistentDataType.LONG);
     public static final HologramProperty<Integer> RENDER_DISTANCE = create("render_distance", DisplaysArgumentHandlers.forIntRange(ArgumentHandlers.INTEGER, 1, 1024), PersistentDataType.INTEGER);
+    public static final HologramProperty<HologramGroupSorting> HOLOGRAM_SORTING = create("hologram_sorting", ArgumentHandlers.forEnum(HologramGroupSorting.class), CustomPersistentDataType.forEnum(HologramGroupSorting.class));
 
     // Display Entity
     public static final HologramProperty<Boolean> GLOWING = createMapped("glowing", ArgumentHandlers.BOOLEAN, PersistentDataType.BOOLEAN);
@@ -70,7 +74,7 @@ public final class HologramProperties {
     // Initialize the available properties after all other properties have been loaded to avoid circular static loading
     static {
         NMSHandler nmsHandler = NMSAdapter.getHandler();
-        KNOWN_PROPERTIES.forEach(property -> {
+        REGISTRY.forEach(property -> {
             if (!(property instanceof MappedHologramProperty<?>) || nmsHandler.isPropertyAvailable(property))
                 AVAILABLE_PROPERTIES.add(property);
         });
@@ -79,32 +83,19 @@ public final class HologramProperties {
     private HologramProperties() { }
 
     private static <T> HologramProperty<T> create(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
-        HologramProperty<T> property = new HologramProperty<>(name, argumentHandler, persistentDataType);
-        if (!KNOWN_PROPERTIES.add(property))
-            throw new IllegalArgumentException("HologramProperty " + name + " already exists");
+        HologramProperty<T> property = new HologramProperty<>(RoseKey.of(name), argumentHandler, persistentDataType);
+        REGISTRY.register(property);
         return property;
     }
 
     private static <T> MappedHologramProperty<T> createMapped(String name, ArgumentHandler<T> argumentHandler, PersistentDataType<?, T> persistentDataType) {
-        MappedHologramProperty<T> property = new MappedHologramProperty<>(name, argumentHandler, persistentDataType);
-        if (!KNOWN_PROPERTIES.add(property))
-            throw new IllegalArgumentException("HologramProperty " + name + " already exists");
+        MappedHologramProperty<T> property = new MappedHologramProperty<>(RoseKey.of(name), argumentHandler, persistentDataType);
+        REGISTRY.register(property);
         return property;
     }
 
     public static boolean isAvailable(HologramProperty<?> property) {
         return AVAILABLE_PROPERTIES.contains(property);
-    }
-
-    public static Set<HologramProperty<?>> values() {
-        return Collections.unmodifiableSet(AVAILABLE_PROPERTIES);
-    }
-
-    public static HologramProperty<?> valueOf(String name) {
-        return AVAILABLE_PROPERTIES.stream()
-                .filter(x -> x.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
     }
 
 }

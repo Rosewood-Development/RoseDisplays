@@ -4,6 +4,7 @@ import dev.rosewood.rosedisplays.config.SettingKey;
 import dev.rosewood.rosedisplays.manager.CommandManager;
 import dev.rosewood.rosedisplays.manager.HologramManager;
 import dev.rosewood.rosedisplays.manager.LocaleManager;
+import dev.rosewood.rosedisplays.manager.RegistryManager;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.RoseSetting;
@@ -48,7 +49,8 @@ public class RoseDisplays extends RosePlugin {
     @Override
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return List.of(
-                HologramManager.class
+                HologramManager.class,
+                RegistryManager.class
         );
     }
 

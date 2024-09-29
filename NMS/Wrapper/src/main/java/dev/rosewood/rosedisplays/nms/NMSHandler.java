@@ -16,10 +16,10 @@ public interface NMSHandler {
 
     // int entityId, HologramPropertyView, EntityType, Location, Collection<Player>
     // Also sends a metadata packet
-    void sendEntitySpawnPacket(int entityId, Object hologramArg, EntityType entityType, Location location, Collection<Player> players);
+    void sendEntitySpawnPacket(int entityId, Object hologramPropertyViewArg, EntityType entityType, Location location, Collection<Player> players);
 
     // int entityId, HologramPropertyView, Collection<Player>
-    void sendEntityMetadataPacket(int entityId, Object hologramArg, Collection<Player> players);
+    void sendEntityMetadataPacket(int entityId, Object hologramPropertyViewArg, Collection<Player> players);
 
     // int entityId, Collection<Player>
     void sendEntityDespawnPacket(int entityId, Collection<Player> players);

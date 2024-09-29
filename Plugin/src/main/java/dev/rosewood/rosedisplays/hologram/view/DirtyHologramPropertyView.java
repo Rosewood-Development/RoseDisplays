@@ -5,12 +5,15 @@ import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
 import java.util.Map;
 import java.util.Set;
 
-public class UnmodifiableHologramPropertyView implements HologramPropertyView {
+/**
+ * A HologramPropertyView that can contain null property values to represent dirty values that have been unset
+ */
+public class DirtyHologramPropertyView implements HologramPropertyView {
 
     private final HologramPropertyTag tag;
     private final Map<HologramProperty<?>, Object> properties;
 
-    public UnmodifiableHologramPropertyView(HologramPropertyTag tag, Map<HologramProperty<?>, Object> properties) {
+    public DirtyHologramPropertyView(HologramPropertyTag tag, Map<HologramProperty<?>, Object> properties) {
         this.tag = tag;
         this.properties = properties;
     }

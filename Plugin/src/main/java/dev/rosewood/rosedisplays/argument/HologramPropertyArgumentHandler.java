@@ -27,7 +27,7 @@ public class HologramPropertyArgumentHandler extends ArgumentHandler<HologramPro
 
         Hologram hologram = group.getHolograms().get(0);
         return hologram.getProperties().getTag().stream()
-                .filter(x -> x.getName().equalsIgnoreCase(input))
+                .filter(x -> x.key().toString().equalsIgnoreCase(input))
                 .findFirst()
                 .orElseThrow(() -> new HandledArgumentException("argument-handler-hologram-property", StringPlaceholders.of("input", input)));
     }
@@ -40,7 +40,8 @@ public class HologramPropertyArgumentHandler extends ArgumentHandler<HologramPro
 
         Hologram hologram = group.getHolograms().get(0);
         return hologram.getProperties().getTag().stream()
-                .map(HologramProperty::getName)
+                .map(HologramProperty::key)
+                .map(Object::toString)
                 .toList();
     }
 

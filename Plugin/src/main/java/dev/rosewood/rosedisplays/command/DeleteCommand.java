@@ -23,8 +23,8 @@ public class DeleteCommand extends BaseRoseCommand {
         LocaleManager localeManager = this.rosePlugin.getManager(LocaleManager.class);
         HologramManager hologramManager = this.rosePlugin.getManager(HologramManager.class);
 
-        if (hologramManager.deleteHologram(hologram.getName())) {
-            localeManager.sendMessage(context.getSender(), "command-delete-success", StringPlaceholders.of("name", hologram.getName()));
+        if (hologramManager.deleteHologram(hologram.key())) {
+            localeManager.sendMessage(context.getSender(), "command-delete-success", StringPlaceholders.of("name", hologram.key()));
         } else {
             throw new IllegalStateException("Hologram didn't exist anymore");
         }

@@ -29,7 +29,7 @@ public class AttachCommand extends BaseRoseCommand {
 
         if (hologram.getHolograms().get(0) instanceof DisplayEntityHologram displayEntityHologram) {
             NMSAdapter.getHandler().sendHologramSetVehiclePacket(displayEntityHologram.getEntityId(), player, List.of(player));
-            this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-attach-success", StringPlaceholders.of("name", hologram.getName(), "player", player.getName()));
+            this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-attach-success", StringPlaceholders.of("name", hologram.key(), "player", player.getName()));
         }
     }
 

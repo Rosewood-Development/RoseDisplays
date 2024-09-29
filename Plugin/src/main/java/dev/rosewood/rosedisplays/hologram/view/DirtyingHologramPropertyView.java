@@ -6,15 +6,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.ApiStatus;
 
-public final class DirtyingHologramPropertyView implements HologramPropertyView {
+public class DirtyingHologramPropertyView implements HologramPropertyView {
 
     private final HologramPropertyTag tag;
-    private final Map<HologramProperty<?>, Object> properties;
-    private final Set<HologramProperty<?>> dirtyProperties;
+    protected final Map<HologramProperty<?>, Object> properties;
+    protected final Set<HologramProperty<?>> dirtyProperties;
 
     public DirtyingHologramPropertyView(HologramPropertyTag tag) {
         this.tag = tag;
@@ -43,7 +41,7 @@ public final class DirtyingHologramPropertyView implements HologramPropertyView 
     @Override
     public <T> void set(HologramProperty<T> property, T value) {
         if (!this.tag.contains(property))
-            throw new IllegalArgumentException("HologramProperty " + property.getName() + " is not applicable");
+            throw new IllegalArgumentException("HologramProperty " + property.key() + " is not applicable");
         this.properties.put(property, value);
         this.dirtyProperties.add(property);
     }
@@ -67,7 +65,6 @@ public final class DirtyingHologramPropertyView implements HologramPropertyView 
     /**
      * Removes all dirty HologramProperties.
      */
-    @ApiStatus.Internal
     public void clean() {
         this.dirtyProperties.clear();
     }
@@ -75,37 +72,19 @@ public final class DirtyingHologramPropertyView implements HologramPropertyView 
     /**
      * @return a view of this DirtyingHologramPropertyView with dirty properties still present but set to null
      */
-    @ApiStatus.Internal
     public HologramPropertyView getDirty() {
         Map<HologramProperty<?>, Object> propertiesMap = new HashMap<>(this.properties);
         for (HologramProperty<?> dirtyProperty : this.dirtyProperties)
             if (!propertiesMap.containsKey(dirtyProperty))
                 propertiesMap.put(dirtyProperty, null);
-        return new UnmodifiableHologramPropertyView(this.tag, propertiesMap);
+        return new DirtyHologramPropertyView(this.tag, propertiesMap);
     }
 
     /**
      * @return true if any HologramProperties contained within are dirty and still need to be rendered
      */
-    @ApiStatus.Internal
     public boolean isDirty() {
         return !this.dirtyProperties.isEmpty();
-    }
-
-    /**
-     * @return the amount of HologramProperties stored within
-     */
-    public int size() {
-        return this.properties.size();
-    }
-
-    /**
-     * Calls the BiConsumer input for each HologramProperty
-     *
-     * @param consumer the BiConsumer to call for each element with a HologramProperty and its value
-     */
-    public void forEach(BiConsumer<? super HologramProperty<?>, ? super Object> consumer) {
-        this.properties.forEach(consumer);
     }
 
 }

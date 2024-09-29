@@ -19,15 +19,15 @@ public class HologramTypeArgumentHandler extends ArgumentHandler<HologramType> {
     public HologramType handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
         String input = inputIterator.next();
 
-        return HologramType.getRegistry().values().stream()
-                .filter(x -> x.name().equalsIgnoreCase(input))
+        return HologramType.REGISTRY.stream()
+                .filter(x -> x.key().toString().equalsIgnoreCase(input))
                 .findFirst()
                 .orElseThrow(() -> new HandledArgumentException("argument-handler-hologram-type", StringPlaceholders.of("input", input)));
     }
 
     @Override
     public List<String> suggest(CommandContext context, Argument argument, String[] args) {
-        return new ArrayList<>(HologramType.getRegistry().keySet());
+        return new ArrayList<>(HologramType.REGISTRY.stringKeys());
     }
 
 }

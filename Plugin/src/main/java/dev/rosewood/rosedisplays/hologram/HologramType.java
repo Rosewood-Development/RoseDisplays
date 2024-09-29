@@ -1,25 +1,25 @@
 package dev.rosewood.rosedisplays.hologram;
 
 import dev.rosewood.rosedisplays.hologram.property.HologramProperties;
-import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
 import dev.rosewood.rosedisplays.hologram.property.HologramPropertyTag;
 import dev.rosewood.rosedisplays.hologram.type.DisplayEntityHologram;
 import dev.rosewood.rosedisplays.hologram.type.TextDisplayEntityHologram;
+import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
 import dev.rosewood.rosedisplays.model.BillboardConstraint;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import dev.rosewood.rosegarden.registry.RoseKey;
+import dev.rosewood.rosegarden.registry.RoseKeyed;
+import dev.rosewood.rosegarden.registry.RoseRegistry;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 
-public record HologramType(String name,
+public record HologramType(RoseKey key,
                            HologramPropertyTag tag,
                            HologramCreator creator,
-                           HologramDeserializer deserializer) {
+                           HologramDeserializer deserializer) implements RoseKeyed {
 
-    private static final Map<String, HologramType> REGISTRY = new HashMap<>();
+    public static final RoseRegistry<HologramType> REGISTRY = RoseRegistry.create(HologramType.class);
 
     public static final HologramType TEXT_DISPLAY_ENTITY = create("text", HologramPropertyTag.TEXT_DISPLAY_ENTITY, type -> {
         Hologram hologram = new TextDisplayEntityHologram(type);
@@ -41,16 +41,9 @@ public record HologramType(String name,
     }, DisplayEntityHologram::new);
 
     private static HologramType create(String name, HologramPropertyTag tag, HologramCreator creator, HologramDeserializer deserializer) {
-        name = name.toLowerCase();
-        if (REGISTRY.containsKey(name))
-            throw new IllegalArgumentException("HologramProperty " + name + " already exists");
-        HologramType type = new HologramType(name, tag, creator, deserializer);
-        REGISTRY.put(name, type);
+        HologramType type = new HologramType(RoseKey.of(name), tag, creator, deserializer);
+        REGISTRY.register(type);
         return type;
-    }
-
-    public static Map<String, HologramType> getRegistry() {
-        return Collections.unmodifiableMap(REGISTRY);
     }
 
     public Hologram create() {

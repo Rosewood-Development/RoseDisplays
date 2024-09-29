@@ -2,6 +2,7 @@ package dev.rosewood.rosedisplays.argument;
 
 import dev.rosewood.rosedisplays.hologram.HologramGroup;
 import dev.rosewood.rosedisplays.manager.HologramManager;
+import dev.rosewood.rosegarden.registry.RoseKey;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.framework.Argument;
 import dev.rosewood.rosegarden.command.framework.ArgumentHandler;
@@ -21,9 +22,10 @@ public class HologramGroupArgumentHandler extends ArgumentHandler<HologramGroup>
 
     @Override
     public HologramGroup handle(CommandContext context, Argument argument, InputIterator inputIterator) throws HandledArgumentException {
-        String input = inputIterator.next();
+        String input = inputIterator.next().toLowerCase();
+        RoseKey key = RoseKey.of(input); // todo: validate
 
-        HologramGroup hologram = this.rosePlugin.getManager(HologramManager.class).getHologram(input);
+        HologramGroup hologram = this.rosePlugin.getManager(HologramManager.class).getHologram(key);
         if (hologram == null)
             throw new HandledArgumentException("argument-handler-hologram", StringPlaceholders.of("input", input));
 

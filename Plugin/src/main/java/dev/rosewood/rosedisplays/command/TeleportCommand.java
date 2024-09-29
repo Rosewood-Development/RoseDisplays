@@ -27,7 +27,7 @@ public class TeleportCommand extends BaseRoseCommand {
         } else {
             player.teleport(hologram.getOrigin());
         }
-        this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-teleport-success", StringPlaceholders.of("name", hologram.getName()));
+        this.rosePlugin.getManager(LocaleManager.class).sendCommandMessage(context.getSender(), "command-teleport-success", StringPlaceholders.of("name", hologram.key()));
     }
 
     @Override

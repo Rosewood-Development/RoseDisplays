@@ -1,14 +1,13 @@
 package dev.rosewood.rosedisplays.hologram.type;
 
-import dev.rosewood.rosedisplays.hologram.Hologram;
 import dev.rosewood.rosedisplays.hologram.HologramType;
 import dev.rosewood.rosedisplays.hologram.view.DirtyingHologramPropertyView;
+import dev.rosewood.rosedisplays.hologram.view.HologramPropertyView;
 import dev.rosewood.rosedisplays.nms.NMSAdapter;
 import dev.rosewood.rosedisplays.nms.NMSHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.Location;
@@ -17,12 +16,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 
-public class DisplayEntityHologram extends Hologram {
+public class DisplayEntityHologram extends PerPlayerHologram {
 
     protected final DisplayEntityType displayEntityType;
     protected final int entityId;
     protected final NMSHandler nmsHandler;
-    protected Location lastLocation;
 
     public DisplayEntityHologram(HologramType type) {
         super(type);
@@ -38,31 +36,30 @@ public class DisplayEntityHologram extends Hologram {
         this.entityId = this.nmsHandler.getNextAvailableEntityId();
     }
 
-    public int getEntityId() {
-        return this.entityId;
+    @Override
+    public void render(HologramPropertyView properties, List<Player> players) {
+        this.nmsHandler.sendEntityMetadataPacket(this.entityId, properties, players);
     }
 
     @Override
-    public void update(Location location, Set<Player> players) {
-        // TODO: Send a teleport packet if the location changes
-        this.lastLocation = location;
-
-        // Update dirty line properties and clean
-        if (this.properties.isDirty()) {
-            if (!players.isEmpty())
-                this.nmsHandler.sendEntityMetadataPacket(this.entityId, this.properties.getDirty(), players);
-            this.properties.clean();
-        }
+    public void onLocationChanged(Location oldLocation, Location newLocation) {
+        // TODO
     }
 
     @Override
     public void onWatcherAdded(Location location, Player player) {
+        super.onWatcherAdded(location, player);
         this.nmsHandler.sendEntitySpawnPacket(this.entityId, this.properties, this.displayEntityType.getEntityType(), location, List.of(player));
     }
 
     @Override
     public void onWatcherRemoved(Player player) {
+        super.onWatcherRemoved(player);
         this.nmsHandler.sendEntityDespawnPacket(this.entityId, List.of(player));
+    }
+
+    public int getEntityId() {
+        return this.entityId;
     }
 
     protected enum DisplayEntityType {

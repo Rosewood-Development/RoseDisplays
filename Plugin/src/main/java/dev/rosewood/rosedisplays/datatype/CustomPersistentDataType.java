@@ -13,6 +13,7 @@ import dev.rosewood.rosedisplays.hologram.view.HologramPropertyView;
 import dev.rosewood.rosedisplays.model.ChunkLocation;
 import dev.rosewood.rosedisplays.model.Quaternion;
 import dev.rosewood.rosedisplays.model.Vector3;
+import dev.rosewood.rosegarden.registry.RoseKey;
 import dev.rosewood.rosedisplays.util.ItemSerializer;
 import dev.rosewood.rosegarden.RosePlugin;
 import java.awt.Color;
@@ -47,7 +48,7 @@ public final class CustomPersistentDataType {
         @Override
         public PersistentDataContainer toPrimitive(UnloadedHologramGroup unloadedHologramGroup, PersistentDataAdapterContext context) {
             PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_NAME, PersistentDataType.STRING, unloadedHologramGroup.name());
+            container.set(KEY_NAME, PersistentDataType.STRING, unloadedHologramGroup.key().toString());
             container.set(KEY_CHUNK_LOCATION, CHUNK_LOCATION, unloadedHologramGroup.chunkLocation());
             return container;
         }
@@ -58,7 +59,7 @@ public final class CustomPersistentDataType {
             ChunkLocation chunkLocation = container.get(KEY_CHUNK_LOCATION, CHUNK_LOCATION);
             if (name == null || chunkLocation == null)
                 throw new IllegalArgumentException("Invalid UnloadedHologramGroup");
-            return new UnloadedHologramGroup(name, chunkLocation);
+            return new UnloadedHologramGroup(RoseKey.of(name), chunkLocation);
         }
 
     };
@@ -260,7 +261,7 @@ public final class CustomPersistentDataType {
         @Override
         public PersistentDataContainer toPrimitive(HologramPropertyView properties, PersistentDataAdapterContext context) {
             PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_TAG, PersistentDataType.STRING, properties.getTag().getName());
+            container.set(KEY_TAG, PersistentDataType.STRING, properties.getTag().key().toString());
             Set<HologramProperty<?>> propertiesSet = properties.getProperties();
             container.set(KEY_SIZE, PersistentDataType.INTEGER, propertiesSet.size());
             int i = 0;
@@ -268,7 +269,7 @@ public final class CustomPersistentDataType {
                 int index = i++;
                 NamespacedKey keyKey = this.getKeyKey(index);
                 NamespacedKey valueKey = this.getValueKey(index);
-                container.set(keyKey, PersistentDataType.STRING, property.getName());
+                container.set(keyKey, PersistentDataType.STRING, property.key().toString());
                 this.forceSet(container, valueKey, property, properties.get(property));
             }
             return container;
@@ -280,7 +281,7 @@ public final class CustomPersistentDataType {
             Integer size = container.get(KEY_SIZE, PersistentDataType.INTEGER);
             if (tagString == null || size == null)
                 throw new IllegalArgumentException("Invalid HologramPropertyContainer");
-            HologramPropertyTag tag = HologramPropertyTag.getRegistry().get(tagString);
+            HologramPropertyTag tag = HologramPropertyTag.REGISTRY.get(RoseKey.of(tagString));
             if (tag == null)
                 throw new IllegalArgumentException("Invalid HologramPropertyContainer, unknown HologramPropertyTag");
             HologramPropertyView properties = new DirtyingHologramPropertyView(tag);
@@ -288,7 +289,7 @@ public final class CustomPersistentDataType {
                 NamespacedKey keyKey = KeyHelper.get("key-" + i);
                 NamespacedKey valueKey = KeyHelper.get("value-" + i);
                 String hologramPropertyName = container.get(keyKey, PersistentDataType.STRING);
-                HologramProperty<?> hologramProperty = HologramProperties.valueOf(hologramPropertyName);
+                HologramProperty<?> hologramProperty = HologramProperties.REGISTRY.get(RoseKey.of(hologramPropertyName));
                 Object hologramPropertyValue = container.get(valueKey, hologramProperty.getPersistentDataType());
                 this.forceSet(properties, hologramProperty, hologramPropertyValue);
             }
@@ -326,7 +327,7 @@ public final class CustomPersistentDataType {
         @Override
         public PersistentDataContainer toPrimitive(Hologram hologram, PersistentDataAdapterContext context) {
             PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_TYPE, PersistentDataType.STRING, hologram.getType().name());
+            container.set(KEY_TYPE, PersistentDataType.STRING, hologram.getType().key().toString());
             container.set(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER, hologram.getProperties());
             hologram.writeAdditionalPDCData(container, context);
             return container;
@@ -338,7 +339,7 @@ public final class CustomPersistentDataType {
             HologramPropertyView properties = container.get(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER);
             if (type == null || !(properties instanceof DirtyingHologramPropertyView dirtyingView))
                 throw new IllegalArgumentException("Invalid Hologram");
-            HologramType hologramType = HologramType.getRegistry().get(type);
+            HologramType hologramType = HologramType.REGISTRY.get(RoseKey.of(type));
             if (hologramType == null)
                 throw new IllegalArgumentException("Invalid Hologram, HologramType " + type + " not found");
             return hologramType.deserialize(hologramType, dirtyingView, container, context);
@@ -359,7 +360,7 @@ public final class CustomPersistentDataType {
         @Override
         public PersistentDataContainer toPrimitive(HologramGroup hologramGroup, PersistentDataAdapterContext context) {
             PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_NAME, PersistentDataType.STRING, hologramGroup.getName());
+            container.set(KEY_NAME, PersistentDataType.STRING, hologramGroup.key().toString());
             container.set(KEY_ORIGIN, LOCATION, hologramGroup.getOrigin());
             container.set(KEY_PROPERTIES, HOLOGRAM_PROPERTY_CONTAINER, hologramGroup.getGroupProperties());
             container.set(KEY_HOLOGRAMS, forList(HOLOGRAM), hologramGroup.getHolograms());
@@ -380,7 +381,7 @@ public final class CustomPersistentDataType {
             } else {
                 dirtyingProperties = new DirtyingHologramPropertyView(HologramPropertyTag.GROUP);
             }
-            return new HologramGroup(name, origin, holograms, dirtyingProperties);
+            return new HologramGroup(RoseKey.of(name), origin, holograms, dirtyingProperties);
         }
 
     };
